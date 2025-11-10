@@ -230,6 +230,14 @@ module "automatic" {
     name = "Automatic"
     tier = "Standard"
   }
+  ingress_profile = {
+    web_app_routing = {
+      enabled = true
+      nginx = {
+        default_ingress_controller_type = "Internal"
+      }
+    }
+  }
 
   depends_on = [
     azurerm_role_assignment.network_contributor
