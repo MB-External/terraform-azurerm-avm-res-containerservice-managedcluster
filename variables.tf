@@ -471,6 +471,12 @@ variable "kubernetes_version" {
   description = "The version of Kubernetes to use for the managed cluster."
 }
 
+variable "kubelet_identity" {
+  type = string
+  default = null
+  description = "The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group."
+}
+
 # tflint-ignore: terraform_unused_declarations
 variable "linux_profile" {
   type = object({

@@ -110,6 +110,11 @@ locals {
   default_node_pool_max_count = var.default_node_pool.max_count == null ? null : tonumber(var.default_node_pool.max_count)
   default_node_pool_min_count = var.default_node_pool.min_count == null ? null : tonumber(var.default_node_pool.min_count)
   default_node_pool_name      = coalesce(try(var.default_node_pool.name, null), "systempool")
+  identity_profile = var.kubelet_identity != null ? {
+    kubeletidentity = {
+      resourceId = var.kubelet_identity
+    }
+  } : null
   ingress_profile = {
     webAppRouting = {
       nginx = {
@@ -170,6 +175,7 @@ locals {
     apiServerAccessProfile = local.api_server_access_profile
     azureMonitorProfile    = local.monitor_profile
     diskEncryptionSetID    = var.disk_encryption_set_id
+    identityProfile        = local.identity_profile
     ingressProfile         = local.ingress_profile
     kubernetesVersion      = var.kubernetes_version
     networkProfile         = local.network_profile_map
