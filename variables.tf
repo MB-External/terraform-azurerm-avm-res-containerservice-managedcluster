@@ -432,6 +432,12 @@ variable "key_vault_secrets_provider" {
   description = "The key vault secrets provider for the Kubernetes cluster. Either rotation enabled or rotation interval must be specified."
 }
 
+variable "kubelet_identity" {
+  type        = string
+  default     = null
+  description = "The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group."
+}
+
 variable "kubernetes_cluster_node_pool_timeouts" {
   type = object({
     create = optional(string)
@@ -469,12 +475,6 @@ variable "kubernetes_version" {
   type        = string
   default     = null
   description = "The version of Kubernetes to use for the managed cluster."
-}
-
-variable "kubelet_identity" {
-  type = string
-  default = null
-  description = "The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group."
 }
 
 # tflint-ignore: terraform_unused_declarations
