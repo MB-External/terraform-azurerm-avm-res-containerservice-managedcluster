@@ -16,17 +16,18 @@ locals {
     } : null
   } : null
   agent_pool_profile_template = {
-    availabilityZones = null
-    count             = null
-    enableAutoScaling = null
-    maxCount          = null
-    minCount          = null
-    mode              = null
-    name              = null
-    osType            = null
-    type              = null
-    vmSize            = null
-    vnetSubnetID      = null
+    availabilityZones      = null
+    count                  = null
+    enableAutoScaling      = null
+    enableEncryptionAtHost = null
+    maxCount               = null
+    minCount               = null
+    mode                   = null
+    name                   = null
+    osType                 = null
+    type                   = null
+    vmSize                 = null
+    vnetSubnetID           = null
   }
   agent_pool_profiles = local.agent_pool_profiles_raw == null ? null : [
     for profile in local.agent_pool_profiles_raw : {
@@ -40,10 +41,11 @@ locals {
     merge(
       local.agent_pool_profile_template,
       {
-        name         = local.default_node_pool_name
-        mode         = "System"
-        count        = local.default_node_pool_count != null ? local.default_node_pool_count : 3
-        vnetSubnetID = var.default_node_pool.vnet_subnet_id
+        name                   = local.default_node_pool_name
+        mode                   = "System"
+        count                  = local.default_node_pool_count != null ? local.default_node_pool_count : 3
+        enableEncryptionAtHost = var.default_node_pool.host_encryption_enabled
+        vnetSubnetID           = var.default_node_pool.vnet_subnet_id
       }
     )
   ] : []
@@ -53,17 +55,18 @@ locals {
     merge(
       local.agent_pool_profile_template,
       {
-        mode              = "System"
-        osType            = "Linux"
-        name              = local.default_node_pool_name
-        count             = local.default_node_pool_count
-        vmSize            = var.default_node_pool.vm_size
-        enableAutoScaling = var.default_node_pool.auto_scaling_enabled
-        minCount          = local.default_node_pool_min_count
-        maxCount          = local.default_node_pool_max_count
-        type              = var.default_node_pool.type
-        vnetSubnetID      = var.default_node_pool.vnet_subnet_id
-        availabilityZones = try(length(var.default_node_pool.zones) > 0 ? var.default_node_pool.zones : null, null)
+        mode                   = "System"
+        osType                 = "Linux"
+        name                   = local.default_node_pool_name
+        count                  = local.default_node_pool_count
+        vmSize                 = var.default_node_pool.vm_size
+        enableAutoScaling      = var.default_node_pool.auto_scaling_enabled
+        enableEncryptionAtHost = var.default_node_pool.host_encryption_enabled
+        minCount               = local.default_node_pool_min_count
+        maxCount               = local.default_node_pool_max_count
+        type                   = var.default_node_pool.type
+        vnetSubnetID           = var.default_node_pool.vnet_subnet_id
+        availabilityZones      = try(length(var.default_node_pool.zones) > 0 ? var.default_node_pool.zones : null, null)
       }
     )
   ]
