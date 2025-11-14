@@ -51,7 +51,7 @@ output "kube_config" {
 
 output "kubelet_identity_id" {
   description = "Kubelet identity object id."
-  value = try(azapi_resource.this.output.properties.identityProfile.kubeletidentity.objectId, null)
+  value       = try(azapi_resource.this.output.properties.identityProfile.kubeletidentity.objectId, null)
 }
 
 output "name" {

@@ -521,6 +521,14 @@ object({
 
 Default: `null`
 
+### <a name="input_kubelet_identity"></a> [kubelet\_identity](#input\_kubelet\_identity)
+
+Description: The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_kubernetes_cluster_node_pool_timeouts"></a> [kubernetes\_cluster\_node\_pool\_timeouts](#input\_kubernetes\_cluster\_node\_pool\_timeouts)
 
 Description: - `create` - (Defaults to 60 minutes) Used when creating the Kubernetes Cluster Node Pool.
@@ -1230,7 +1238,7 @@ Description: User kubeconfig raw YAML (sensitive).
 
 ### <a name="output_kubelet_identity_id"></a> [kubelet\_identity\_id](#output\_kubelet\_identity\_id)
 
-Description: Kubelet identity object id (not currently extracted).
+Description: Kubelet identity object id.
 
 ### <a name="output_name"></a> [name](#output\_name)
 
