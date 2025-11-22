@@ -24,6 +24,7 @@ locals {
     minCount               = null
     mode                   = null
     name                   = null
+    osSku                  = null
     osType                 = null
     type                   = null
     vmSize                 = null
@@ -57,6 +58,7 @@ locals {
       {
         mode                   = "System"
         osType                 = "Linux"
+        osSku                  = var.default_node_pool.os_sku
         name                   = local.default_node_pool_name
         count                  = local.default_node_pool_count
         vmSize                 = var.default_node_pool.vm_size
