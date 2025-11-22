@@ -42,7 +42,7 @@ locals {
       azureKeyvaultSecretsProvider = {
         enabled = true
         config = {
-          enableSecretRotation = var.key_vault_secrets_provider.secret_rotation_enabled
+          enableSecretRotation = tostring(var.key_vault_secrets_provider.secret_rotation_enabled)
           rotationPollInterval = var.key_vault_secrets_provider.secret_rotation_interval
         }
       }
