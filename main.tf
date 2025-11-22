@@ -11,7 +11,6 @@ resource "azapi_resource" "this" {
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   replace_triggers_external_values = [
-    var.disk_encryption_set_id,
     var.node_resource_group_name,
   ]
   response_export_values = [
