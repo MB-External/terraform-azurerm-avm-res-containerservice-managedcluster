@@ -182,15 +182,16 @@ locals {
     networkProfile         = local.network_profile_map
     nodeResourceGroup      = var.node_resource_group_name
     # Placeholders (null) for non-Automatic-only attributes so object type remains consistent across ternary
-    autoScalerProfile  = null
-    autoUpgradeProfile = null
-    dnsPrefix          = null
-    httpProxyConfig    = null
-    oidcIssuerProfile  = null
-    securityProfile    = null
-    windowsProfile     = null
-    storageProfile     = null
-    supportPlan        = null
+    autoScalerProfile         = null
+    autoUpgradeProfile        = null
+    dnsPrefix                 = null
+    httpProxyConfig           = null
+    oidcIssuerProfile         = null
+    securityProfile           = null
+    windowsProfile            = null
+    storageProfile            = null
+    supportPlan               = null
+    workloadAutoScalerProfile = null
   }
   properties_final          = { for k, v in local.properties_final_preclean : k => v if v != null }
   properties_final_preclean = local.is_automatic ? local.properties_base : merge(local.properties_base, local.properties_standard_only)
@@ -239,6 +240,10 @@ locals {
       snapshotController = { enabled = var.storage_profile.snapshot_controller_enabled }
     } : null
     supportPlan = var.support_plan
+    workloadAutoScalerProfile = var.workload_autoscaler_profile != null ? merge(
+      var.workload_autoscaler_profile.keda_enabled != null ? { keda = { enabled = var.workload_autoscaler_profile.keda_enabled } } : {},
+      var.workload_autoscaler_profile.vpa_enabled != null ? { verticalPodAutoscaler = { enabled = var.workload_autoscaler_profile.vpa_enabled } } : {},
+    ) : null
   }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
