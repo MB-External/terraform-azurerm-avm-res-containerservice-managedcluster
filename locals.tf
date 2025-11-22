@@ -76,6 +76,7 @@ locals {
     enablePrivateClusterPublicFQDN = var.api_server_access_profile.enable_private_cluster_public_fqdn
     privateDnsZone                 = var.api_server_access_profile.private_dns_zone_id
     subnetId                       = var.api_server_access_profile.subnet_id
+    enableVnetIntegration          = var.api_server_access_profile.subnet_id != null
     disableRunCommand              = !var.api_server_access_profile.run_command_enabled
   } : null
   auto_scaler_profile_map = (
