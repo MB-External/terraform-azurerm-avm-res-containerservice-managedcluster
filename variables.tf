@@ -1059,3 +1059,16 @@ variable "workload_identity_enabled" {
   default     = false
   description = "Whether or not workload identity is enabled for the Kubernetes cluster."
 }
+
+variable "node_auto_provisioning_profile" {
+  type = object({
+    default_node_pools = optional(string)
+    mode               = optional(string)
+  })
+  default     = null
+  description = "The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster."
+  validation {
+    error_message = "Node Auto Provisioning and Cluster Auto Scaler cannot be enabled at the same time."
+    condition     = var.auto_scaler_profile != null && var.node_auto_provisioning_profile != null
+  }
+}
