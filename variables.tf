@@ -1069,6 +1069,6 @@ variable "node_auto_provisioning_profile" {
   description = "The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster."
   validation {
     error_message = "Node Auto Provisioning and Cluster Auto Scaler cannot be enabled at the same time."
-    condition     = var.auto_scaler_profile != null && var.node_auto_provisioning_profile != null
+    condition     = var.auto_scaler_profile == null || var.node_auto_provisioning_profile == null
   }
 }
