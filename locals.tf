@@ -27,7 +27,7 @@ locals {
     nodeTaints             = null
     osDiskSizeGB           = null
     osDiskType             = null
-    osSku                  = null
+    osSKU                  = null
     osType                 = null
     type                   = null
     vmSize                 = null
