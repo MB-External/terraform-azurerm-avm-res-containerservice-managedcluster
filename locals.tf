@@ -192,6 +192,7 @@ locals {
     dnsPrefix                 = null
     enableRbac                = null
     httpProxyConfig           = null
+    nodeProvisioningProfile   = null
     oidcIssuerProfile         = null
     securityProfile           = null
     windowsProfile            = null
@@ -214,6 +215,10 @@ locals {
       httpsProxy = var.http_proxy_config.https_proxy
       noProxy    = var.http_proxy_config.no_proxy
       trustedCa  = var.http_proxy_config.trusted_ca
+    } : null
+    nodeProvisioningProfile = var.node_auto_provisioning_profile != null ? {
+      defaultNodePools = var.node_auto_provisioning_profile.default_node_pools
+      mode             = var.node_auto_provisioning_profile.mode
     } : null
     dnsPrefix  = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
     enableRbac = var.role_based_access_control_enabled
