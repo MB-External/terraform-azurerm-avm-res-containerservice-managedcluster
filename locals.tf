@@ -59,7 +59,9 @@ locals {
       {
         mode                   = "System"
         osType                 = "Linux"
-        osSku                  = var.default_node_pool.os_sku
+        osDiskSizeGB           = var.default_node_pool.os_disk_size_gb
+        osSKU                  = var.default_node_pool.os_sku
+        osDiskType             = var.default_node_pool.os_disk_type
         name                   = local.default_node_pool_name
         count                  = local.default_node_pool_count
         vmSize                 = var.default_node_pool.vm_size
@@ -203,12 +205,20 @@ locals {
   properties_final          = { for k, v in local.properties_final_preclean : k => v if v != null }
   properties_final_preclean = local.is_automatic ? local.properties_base : merge(local.properties_base, local.properties_standard_only)
   properties_standard_only = {
-    aadProfile = var.azure_active_directory_role_based_access_control != null ? {
-      adminGroupObjectIDs = var.azure_active_directory_role_based_access_control.admin_group_object_ids
-      enableAzureRBAC     = var.azure_active_directory_role_based_access_control.azure_rbac_enabled
-      managed             = true
-      tenantID            = var.azure_active_directory_role_based_access_control.tenant_id
-    } : null
+    aadProfile = var.azure_active_directory_role_based_access_control != null ? merge(
+      var.azure_active_directory_role_based_access_control.admin_group_object_ids != null ? {
+        adminGroupObjectIDs = var.azure_active_directory_role_based_access_control.admin_group_object_ids
+      } : {},
+      var.azure_active_directory_role_based_access_control.azure_rbac_enabled != null ? {
+        enableAzureRBAC = var.azure_active_directory_role_based_access_control.azure_rbac_enabled
+      } : {},
+      var.azure_active_directory_role_based_access_control.tenant_id != null ? {
+        tenantID = var.azure_active_directory_role_based_access_control.tenant_id
+      } : {},
+      {
+        managed = true
+      }
+    ) : null
     httpProxyConfig = var.http_proxy_config != null ? {
       enabled    = true
       httpProxy  = var.http_proxy_config.http_proxy
