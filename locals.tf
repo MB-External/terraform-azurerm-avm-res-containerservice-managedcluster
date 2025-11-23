@@ -205,6 +205,7 @@ locals {
     aadProfile = var.azure_active_directory_role_based_access_control != null ? {
       adminGroupObjectIDs = var.azure_active_directory_role_based_access_control.admin_group_object_ids
       enableAzureRBAC     = var.azure_active_directory_role_based_access_control.azure_rbac_enabled
+      managed             = true
       tenantID            = var.azure_active_directory_role_based_access_control.tenant_id
     } : null
     httpProxyConfig = var.http_proxy_config != null ? {
