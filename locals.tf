@@ -184,9 +184,11 @@ locals {
     networkProfile         = local.network_profile_map
     nodeResourceGroup      = var.node_resource_group_name
     # Placeholders (null) for non-Automatic-only attributes so object type remains consistent across ternary
+    aadProfile                = null
     autoScalerProfile         = null
     autoUpgradeProfile        = null
     dnsPrefix                 = null
+    enableRbac                = null
     httpProxyConfig           = null
     oidcIssuerProfile         = null
     securityProfile           = null
@@ -198,6 +200,11 @@ locals {
   properties_final          = { for k, v in local.properties_final_preclean : k => v if v != null }
   properties_final_preclean = local.is_automatic ? local.properties_base : merge(local.properties_base, local.properties_standard_only)
   properties_standard_only = {
+    aadProfile = var.azure_active_directory_role_based_access_control != null ? {
+      adminGroupObjectIDs = var.azure_active_directory_role_based_access_control.admin_group_object_ids
+      enableAzureRBAC     = var.azure_active_directory_role_based_access_control.azure_rbac_enabled
+      tenantID            = var.azure_active_directory_role_based_access_control.tenant_id
+    } : null
     httpProxyConfig = var.http_proxy_config != null ? {
       enabled    = true
       httpProxy  = var.http_proxy_config.http_proxy
@@ -205,7 +212,8 @@ locals {
       noProxy    = var.http_proxy_config.no_proxy
       trustedCa  = var.http_proxy_config.trusted_ca
     } : null
-    dnsPrefix = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
+    dnsPrefix  = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
+    enableRbac = var.role_based_access_control_enabled
     autoUpgradeProfile = (var.automatic_upgrade_channel != null || var.node_os_channel_upgrade != null) ? {
       upgradeChannel       = var.automatic_upgrade_channel
       nodeOSUpgradeChannel = var.node_os_channel_upgrade
