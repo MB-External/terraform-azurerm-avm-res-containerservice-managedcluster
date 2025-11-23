@@ -25,6 +25,8 @@ locals {
     mode                   = null
     name                   = null
     nodeTaints             = null
+    osDiskSizeGB           = null
+    osDiskType             = null
     osSku                  = null
     osType                 = null
     type                   = null
