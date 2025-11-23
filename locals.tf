@@ -193,6 +193,7 @@ locals {
     aadProfile                = null
     autoScalerProfile         = null
     autoUpgradeProfile        = null
+    disableLocalAccounts      = null
     dnsPrefix                 = null
     enableRbac                = null
     httpProxyConfig           = null
@@ -232,8 +233,9 @@ locals {
       defaultNodePools = var.node_auto_provisioning_profile.default_node_pools
       mode             = var.node_auto_provisioning_profile.mode
     } : null
-    dnsPrefix  = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
-    enableRbac = var.role_based_access_control_enabled
+    disableLocalAccounts = var.local_account_disabled
+    dnsPrefix            = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
+    enableRbac           = var.role_based_access_control_enabled
     autoUpgradeProfile = (var.automatic_upgrade_channel != null || var.node_os_channel_upgrade != null) ? {
       upgradeChannel       = var.automatic_upgrade_channel
       nodeOSUpgradeChannel = var.node_os_channel_upgrade
