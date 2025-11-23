@@ -230,6 +230,9 @@ locals {
       } : null
       defender = var.defender_log_analytics_workspace_id != null ? {
         logAnalyticsWorkspaceResourceId = var.defender_log_analytics_workspace_id
+        securityMonitoring = {
+          enabled = true
+        }
       } : null
       } : {
       workloadIdentity = null
