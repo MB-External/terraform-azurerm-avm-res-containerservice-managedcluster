@@ -24,6 +24,7 @@ locals {
     minCount               = null
     mode                   = null
     name                   = null
+    nodeTaints             = null
     osSku                  = null
     osType                 = null
     type                   = null
@@ -66,6 +67,7 @@ locals {
         enableEncryptionAtHost = var.default_node_pool.host_encryption_enabled
         minCount               = local.default_node_pool_min_count
         maxCount               = local.default_node_pool_max_count
+        nodeTaints             = var.default_node_pool.only_critical_addons_enabled ? ["CriticalAddonsOnly=true:NoSchedule"] : []
         type                   = var.default_node_pool.type
         vnetSubnetID           = var.default_node_pool.vnet_subnet_id
         availabilityZones      = try(length(var.default_node_pool.zones) > 0 ? var.default_node_pool.zones : null, null)

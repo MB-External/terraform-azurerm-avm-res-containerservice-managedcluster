@@ -183,7 +183,7 @@ variable "default_node_pool" {
     max_pods                      = optional(number)
     node_public_ip_prefix_id      = optional(string)
     node_labels                   = optional(map(string))
-    only_critical_addons_enabled  = optional(string)
+    only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
     os_disk_size_gb               = optional(string)
     os_disk_type                  = optional(string)
