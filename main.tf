@@ -97,7 +97,7 @@ resource "azapi_resource_action" "this_user_kubeconfig" {
 }
 
 resource "azapi_resource_action" "this_admin_kubeconfig" {
-  count = local.is_automatic ? 0 : 1
+  count = local.is_automatic || var.local_account_disabled ? 0 : 1
 
   action                 = "listClusterAdminCredential"
   method                 = "POST"
