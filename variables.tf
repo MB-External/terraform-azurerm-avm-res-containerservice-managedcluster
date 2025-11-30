@@ -489,12 +489,12 @@ variable "linux_profile" {
 
 variable "local_account_disabled" {
   type        = bool
-  default     = true
-  description = "Defaults to true. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled."
+  default     = false
+  description = "Defaults to false. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled."
   nullable    = false
 
   validation {
-    condition     = var.local_account_disabled && try(var.azure_active_directory_role_based_access_control.azure_rbac_enabled, false)
+    condition     = !var.local_account_disabled || var.azure_active_directory_role_based_access_control.azure_rbac_enabled
     error_message = "Azure RBAC must be enabled to disable local accounts"
   }
 }

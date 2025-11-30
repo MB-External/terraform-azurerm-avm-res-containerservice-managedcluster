@@ -87,7 +87,7 @@ moved {
 
 # Retrieve kubeconfig(s) & full cluster for outputs
 resource "azapi_resource_action" "this_user_kubeconfig" {
-  count = local.is_automatic ? 0 : 1
+  count = local.is_automatic || var.local_account_disabled ? 0 : 1
 
   action                 = "listClusterUserCredential"
   method                 = "POST"
