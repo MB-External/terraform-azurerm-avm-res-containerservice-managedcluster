@@ -191,17 +191,22 @@ variable "default_node_pool" {
     pod_subnet_id                 = optional(string)
     proximity_placement_group_id  = optional(string)
     scale_down_mode               = optional(string)
-    snapshot_id                   = optional(string)
-    temporary_name_for_rotation   = optional(string)
-    type                          = optional(string, "VirtualMachineScaleSets")
-    tags                          = optional(map(string))
-    ultra_ssd_enabled             = optional(bool)
-    vnet_subnet_id                = optional(string)
-    workload_runtime              = optional(string)
-    zones                         = optional(list(string))
-    max_count                     = optional(number)
-    min_count                     = optional(number)
-    node_count                    = optional(number, 3)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    snapshot_id                 = optional(string)
+    temporary_name_for_rotation = optional(string)
+    type                        = optional(string, "VirtualMachineScaleSets")
+    tags                        = optional(map(string))
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    workload_runtime            = optional(string)
+    zones                       = optional(list(string))
+    max_count                   = optional(number)
+    min_count                   = optional(number)
+    node_count                  = optional(number, 3)
     kubelet_config = optional(object({
       cpu_manager_policy        = optional(string)
       cpu_cfs_quota_enabled     = optional(bool, true)
@@ -712,15 +717,20 @@ variable "node_pools" {
     pod_subnet_id                = optional(string)
     priority                     = optional(string)
     proximity_placement_group_id = optional(string)
-    spot_max_price               = optional(string)
-    snapshot_id                  = optional(string)
-    tags                         = optional(map(string))
-    scale_down_mode              = optional(string)
-    ultra_ssd_enabled            = optional(bool)
-    vnet_subnet_id               = optional(string)
-    zones                        = optional(list(string))
-    temporary_name_for_rotation  = optional(string)
-    workload_runtime             = optional(string)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    spot_max_price              = optional(string)
+    snapshot_id                 = optional(string)
+    tags                        = optional(map(string))
+    scale_down_mode             = optional(string)
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    zones                       = optional(list(string))
+    temporary_name_for_rotation = optional(string)
+    workload_runtime            = optional(string)
     windows_profile = optional(object({
       outbound_nat_enabled = optional(bool)
     }))
@@ -784,6 +794,12 @@ variable "node_resource_group_name" {
   type        = string
   default     = null
   description = "The resource group name for the node pool."
+}
+
+variable "node_resource_group_lockdown" {
+  type        = bool
+  default     = null
+  description = "Whether or not to enable resource group lockdown on the node resource group."
 }
 
 variable "oidc_issuer_enabled" {

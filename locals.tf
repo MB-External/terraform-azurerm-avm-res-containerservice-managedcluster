@@ -29,6 +29,7 @@ locals {
     osDiskType             = null
     osSKU                  = null
     osType                 = null
+    securityProfile        = null
     type                   = null
     vmSize                 = null
     vnetSubnetID           = null
@@ -72,6 +73,7 @@ locals {
         minCount               = local.default_node_pool_min_count
         maxCount               = local.default_node_pool_max_count
         nodeTaints             = var.default_node_pool.only_critical_addons_enabled ? ["CriticalAddonsOnly=true:NoSchedule"] : []
+        securityProfile        = local.default_node_pool_security_profile
         type                   = var.default_node_pool.type
         vnetSubnetID           = var.default_node_pool.vnet_subnet_id
         availabilityZones      = try(length(var.default_node_pool.zones) > 0 ? var.default_node_pool.zones : null, null)
@@ -119,6 +121,17 @@ locals {
   default_node_pool_max_count = var.default_node_pool.max_count == null ? null : tonumber(var.default_node_pool.max_count)
   default_node_pool_min_count = var.default_node_pool.min_count == null ? null : tonumber(var.default_node_pool.min_count)
   default_node_pool_name      = coalesce(try(var.default_node_pool.name, null), "systempool")
+  default_node_pool_security_profile = var.default_node_pool.security_profile != null ? merge(
+    var.default_node_pool.security_profile.secure_boot_enabled ? {
+      enableSecureBoot = var.default_node_pool.security_profile.secure_boot_enabled
+    } : {},
+    var.default_node_pool.security_profile.vtpm_enabled ? {
+      enableVTPM = var.default_node_pool.security_profile.vtpm_enabled
+    } : {},
+    var.default_node_pool.security_profile.ssh_access_mode ? {
+      sshAccess = var.default_node_pool.security_profile.ssh_access_mode
+    } : {}
+  ) : null
   identity_profile = var.kubelet_identity != null ? {
     kubeletidentity = {
       resourceId = var.kubelet_identity
@@ -198,6 +211,7 @@ locals {
     enableRbac                = null
     httpProxyConfig           = null
     nodeProvisioningProfile   = null
+    nodeResourceGroupProfile  = null
     oidcIssuerProfile         = null
     securityProfile           = null
     windowsProfile            = null
@@ -232,6 +246,9 @@ locals {
     nodeProvisioningProfile = var.node_auto_provisioning_profile != null ? {
       defaultNodePools = var.node_auto_provisioning_profile.default_node_pools
       mode             = var.node_auto_provisioning_profile.mode
+    } : null
+    nodeResourceGroupProfile = var.node_resource_group_lockdown != null ? {
+      restrictionLevel = var.node_resource_group_lockdown ? "ReadOnly" : "Unrestricted"
     } : null
     disableLocalAccounts = var.local_account_disabled
     dnsPrefix            = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)

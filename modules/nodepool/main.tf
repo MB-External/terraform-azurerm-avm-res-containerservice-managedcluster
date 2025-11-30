@@ -59,6 +59,7 @@ locals {
     networkProfile             = local.network_profile_map
     kubeletConfig              = local.kubelet_config_map
     linuxOSConfig              = local.linux_os_config_map
+    securityProfile            = local.security_profile
   }
   creation_data_map = var.snapshot_id == null ? null : {
     sourceResourceId = var.snapshot_id
@@ -90,6 +91,17 @@ locals {
       protocol  = p.protocol
     }]
   }
+  security_profile = var.security_profile != null ? merge(
+    var.security_profile.secure_boot_enabled ? {
+      enableSecureBoot = var.security_profile.secure_boot_enabled
+       } : {},
+    var.security_profile.vtpm_enabled ? {
+      enableVTPM = var.security_profile.vtpm_enabled
+       } : {},
+       var.security_profile.ssh_access_mode ? {
+      sshAccess = var.security_profile.ssh_access_mode
+       } : {}
+  ) : null
   sysctls = { for k, v in local.sysctls_base : k => v if v != null }
   # Build sysctls map (filter out nulls) combining min/max port range if both provided
   sysctls_base = var.linux_os_config == null || var.linux_os_config.sysctl_config == null ? {} : {
