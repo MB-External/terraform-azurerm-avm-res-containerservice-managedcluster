@@ -185,7 +185,7 @@ variable "default_node_pool" {
     node_labels                   = optional(map(string))
     only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
-    os_disk_size_gb               = optional(string)
+    os_disk_size_gb               = optional(number)
     os_disk_type                  = optional(string)
     os_sku                        = optional(string)
     pod_subnet_id                 = optional(string)

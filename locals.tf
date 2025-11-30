@@ -128,7 +128,7 @@ locals {
     var.default_node_pool.security_profile.vtpm_enabled != null ? {
       enableVTPM = var.default_node_pool.security_profile.vtpm_enabled
     } : {},
-    var.default_node_pool.security_profile.ssh_access_mode != null? {
+    var.default_node_pool.security_profile.ssh_access_mode != null ? {
       sshAccess = var.default_node_pool.security_profile.ssh_access_mode
     } : {}
   ) : null
