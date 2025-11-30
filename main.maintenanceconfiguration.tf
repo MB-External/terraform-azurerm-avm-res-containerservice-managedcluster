@@ -37,5 +37,5 @@ module "maintenance_node_image_upgrade" {
   user_agent_header = local.avm_azapi_header
   utc_offset        = try(var.maintenance_window.utc_offset, null)
   week_index        = try(var.maintenance_window.week_index, null)
-  schedule_name     = "aksNodeImageUpgradeSchedule"
+  schedule_name     = "aksManagedNodeOSUpgradeSchedule"
 }
