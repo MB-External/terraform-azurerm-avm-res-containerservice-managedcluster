@@ -487,12 +487,12 @@ variable "linux_profile" {
   description = "The Linux profile for the Kubernetes cluster."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "local_account_disabled" {
   type        = bool
   default     = true
   description = "Defaults to true. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled."
   nullable    = false
+
   validation {
     condition     = var.local_account_disabled && try(var.azure_active_directory_role_based_access_control.azure_rbac_enabled, false)
     error_message = "Azure RBAC must be enabled to disable local accounts"
@@ -646,6 +646,20 @@ variable "network_profile" {
   validation {
     condition     = try(var.network_profile.network_data_plane, null) != "cilium" || var.network_profile.network_policy == "cilium"
     error_message = "When `network_data_plane` is set to cilium, `network_policy` must also be set to cilium."
+  }
+}
+
+variable "node_auto_provisioning_profile" {
+  type = object({
+    default_node_pools = optional(string)
+    mode               = optional(string)
+  })
+  default     = null
+  description = "The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster."
+
+  validation {
+    error_message = "Node Auto Provisioning and Cluster Auto Scaler cannot be enabled at the same time."
+    condition     = var.auto_scaler_profile == null || var.node_auto_provisioning_profile == null
   }
 }
 
@@ -1066,17 +1080,4 @@ variable "workload_identity_enabled" {
   type        = bool
   default     = false
   description = "Whether or not workload identity is enabled for the Kubernetes cluster."
-}
-
-variable "node_auto_provisioning_profile" {
-  type = object({
-    default_node_pools = optional(string)
-    mode               = optional(string)
-  })
-  default     = null
-  description = "The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster."
-  validation {
-    error_message = "Node Auto Provisioning and Cluster Auto Scaler cannot be enabled at the same time."
-    condition     = var.auto_scaler_profile == null || var.node_auto_provisioning_profile == null
-  }
 }

@@ -270,7 +270,7 @@ object({
     max_pods                      = optional(number)
     node_public_ip_prefix_id      = optional(string)
     node_labels                   = optional(map(string))
-    only_critical_addons_enabled  = optional(string)
+    only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
     os_disk_size_gb               = optional(string)
     os_disk_type                  = optional(string)
@@ -634,14 +634,19 @@ Type:
 
 ```hcl
 object({
-    allowed = object({
-      day   = string
-      hours = set(number)
-    })
-    not_allowed = object({
+    frequency    = string
+    interval     = number
+    duration     = number
+    day_of_week  = optional(string)
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string)
+    utc_offset   = optional(string)
+    start_date   = optional(string)
+    not_allowed = optional(object({
       start = string
       end   = string
-    })
+    }))
   })
 ```
 
@@ -751,6 +756,21 @@ Default:
   "network_policy": "azure"
 }
 ```
+
+### <a name="input_node_auto_provisioning_profile"></a> [node\_auto\_provisioning\_profile](#input\_node\_auto\_provisioning\_profile)
+
+Description: The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster.
+
+Type:
+
+```hcl
+object({
+    default_node_pools = optional(string)
+    mode               = optional(string)
+  })
+```
+
+Default: `null`
 
 ### <a name="input_node_os_channel_upgrade"></a> [node\_os\_channel\_upgrade](#input\_node\_os\_channel\_upgrade)
 
@@ -1299,6 +1319,12 @@ Source: ./modules/alerting
 Version:
 
 ### <a name="module_maintenance_auto_upgrade"></a> [maintenance\_auto\_upgrade](#module\_maintenance\_auto\_upgrade)
+
+Source: ./modules/maintenanceconfiguration
+
+Version:
+
+### <a name="module_maintenance_node_image_upgrade"></a> [maintenance\_node\_image\_upgrade](#module\_maintenance\_node\_image\_upgrade)
 
 Source: ./modules/maintenanceconfiguration
 

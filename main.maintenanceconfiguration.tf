@@ -5,6 +5,7 @@ module "maintenance_auto_upgrade" {
   frequency         = try(var.maintenance_window_auto_upgrade.frequency, null)
   interval          = try(var.maintenance_window_auto_upgrade.interval, null)
   parent_id         = azapi_resource.this.id
+  schedule_name     = "aksManagedAutoUpgradeSchedule"
   day_of_month      = try(var.maintenance_window_auto_upgrade.day_of_month, null)
   day_of_week       = try(var.maintenance_window_auto_upgrade.day_of_week, null)
   enable            = var.maintenance_window_auto_upgrade != null
@@ -16,7 +17,6 @@ module "maintenance_auto_upgrade" {
   user_agent_header = local.avm_azapi_header
   utc_offset        = try(var.maintenance_window_auto_upgrade.utc_offset, null)
   week_index        = try(var.maintenance_window_auto_upgrade.week_index, null)
-  schedule_name     = "aksManagedAutoUpgradeSchedule"
 }
 
 module "maintenance_node_image_upgrade" {
@@ -26,6 +26,7 @@ module "maintenance_node_image_upgrade" {
   frequency         = try(var.maintenance_window.frequency, null)
   interval          = try(var.maintenance_window.interval, null)
   parent_id         = azapi_resource.this.id
+  schedule_name     = "aksManagedNodeOSUpgradeSchedule"
   day_of_month      = try(var.maintenance_window.day_of_month, null)
   day_of_week       = try(var.maintenance_window.day_of_week, null)
   enable            = var.maintenance_window != null
@@ -37,5 +38,4 @@ module "maintenance_node_image_upgrade" {
   user_agent_header = local.avm_azapi_header
   utc_offset        = try(var.maintenance_window.utc_offset, null)
   week_index        = try(var.maintenance_window.week_index, null)
-  schedule_name     = "aksManagedNodeOSUpgradeSchedule"
 }
