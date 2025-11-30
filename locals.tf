@@ -122,13 +122,13 @@ locals {
   default_node_pool_min_count = var.default_node_pool.min_count == null ? null : tonumber(var.default_node_pool.min_count)
   default_node_pool_name      = coalesce(try(var.default_node_pool.name, null), "systempool")
   default_node_pool_security_profile = var.default_node_pool.security_profile != null ? merge(
-    var.default_node_pool.security_profile.secure_boot_enabled ? {
+    var.default_node_pool.security_profile.secure_boot_enabled != null ? {
       enableSecureBoot = var.default_node_pool.security_profile.secure_boot_enabled
     } : {},
-    var.default_node_pool.security_profile.vtpm_enabled ? {
+    var.default_node_pool.security_profile.vtpm_enabled != null ? {
       enableVTPM = var.default_node_pool.security_profile.vtpm_enabled
     } : {},
-    var.default_node_pool.security_profile.ssh_access_mode ? {
+    var.default_node_pool.security_profile.ssh_access_mode != null? {
       sshAccess = var.default_node_pool.security_profile.ssh_access_mode
     } : {}
   ) : null

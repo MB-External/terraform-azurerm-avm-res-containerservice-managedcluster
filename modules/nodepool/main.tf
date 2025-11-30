@@ -92,15 +92,15 @@ locals {
     }]
   }
   security_profile = var.security_profile != null ? merge(
-    var.security_profile.secure_boot_enabled ? {
+    var.security_profile.secure_boot_enabled != null ? {
       enableSecureBoot = var.security_profile.secure_boot_enabled
-       } : {},
-    var.security_profile.vtpm_enabled ? {
+    } : {},
+    var.security_profile.vtpm_enabled != null ? {
       enableVTPM = var.security_profile.vtpm_enabled
-       } : {},
-       var.security_profile.ssh_access_mode ? {
+    } : {},
+    var.security_profile.ssh_access_mode != null ? {
       sshAccess = var.security_profile.ssh_access_mode
-       } : {}
+    } : {}
   ) : null
   sysctls = { for k, v in local.sysctls_base : k => v if v != null }
   # Build sysctls map (filter out nulls) combining min/max port range if both provided

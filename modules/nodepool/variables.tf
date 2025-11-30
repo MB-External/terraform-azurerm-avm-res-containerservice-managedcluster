@@ -267,6 +267,21 @@ variable "scale_down_mode" {
   description = "Optional. The scale down mode for the nodepool."
 }
 
+variable "security_profile" {
+  type = object({
+    secure_boot_enabled = optional(bool)
+    vtpm_enabled        = optional(bool)
+    ssh_access_mode     = optional(string)
+  })
+  default     = null
+  description = "Optional. The security profile for the nodepool."
+
+  validation {
+    condition     = try(contains(["Disabled", "EntraId", "LocalUser"], var.security_profile.ssh_access_mode), true)
+    error_message = "If provided, 'ssh_access_mode' must be one of 'Disabled', 'EntraId', or 'LocalUser'."
+  }
+}
+
 variable "snapshot_id" {
   type        = string
   default     = null
@@ -351,18 +366,4 @@ variable "zones" {
   type        = list(string)
   default     = null
   description = "Optional. The availability zones for the nodepool."
-}
-
-variable "security_profile" {
-  type = object({
-    secure_boot_enabled  = optional(bool)
-    vtpm_enabled        = optional(bool)
-    ssh_access_mode     = optional(string)
-  })
-  default     = null
-  description = "Optional. The security profile for the nodepool."
-  validation {
-    condition = try(contains(["Disabled", "EntraId","LocalUser"], var.security_profile.ssh_access_mode), true)
-    error_message = "If provided, 'ssh_access_mode' must be one of 'Disabled', 'EntraId', or 'LocalUser'."
-  }
 }

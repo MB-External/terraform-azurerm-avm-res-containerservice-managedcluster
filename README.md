@@ -25,7 +25,7 @@ Things to do:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.12, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
@@ -278,17 +278,22 @@ object({
     pod_subnet_id                 = optional(string)
     proximity_placement_group_id  = optional(string)
     scale_down_mode               = optional(string)
-    snapshot_id                   = optional(string)
-    temporary_name_for_rotation   = optional(string)
-    type                          = optional(string, "VirtualMachineScaleSets")
-    tags                          = optional(map(string))
-    ultra_ssd_enabled             = optional(bool)
-    vnet_subnet_id                = optional(string)
-    workload_runtime              = optional(string)
-    zones                         = optional(list(string))
-    max_count                     = optional(number)
-    min_count                     = optional(number)
-    node_count                    = optional(number, 3)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    snapshot_id                 = optional(string)
+    temporary_name_for_rotation = optional(string)
+    type                        = optional(string, "VirtualMachineScaleSets")
+    tags                        = optional(map(string))
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    workload_runtime            = optional(string)
+    zones                       = optional(list(string))
+    max_count                   = optional(number)
+    min_count                   = optional(number)
+    node_count                  = optional(number, 3)
     kubelet_config = optional(object({
       cpu_manager_policy        = optional(string)
       cpu_cfs_quota_enabled     = optional(bool, true)
@@ -594,11 +599,11 @@ Default: `null`
 
 ### <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled)
 
-Description: Defaults to true. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled.
+Description: Defaults to false. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
@@ -824,15 +829,20 @@ map(object({
     pod_subnet_id                = optional(string)
     priority                     = optional(string)
     proximity_placement_group_id = optional(string)
-    spot_max_price               = optional(string)
-    snapshot_id                  = optional(string)
-    tags                         = optional(map(string))
-    scale_down_mode              = optional(string)
-    ultra_ssd_enabled            = optional(bool)
-    vnet_subnet_id               = optional(string)
-    zones                        = optional(list(string))
-    temporary_name_for_rotation  = optional(string)
-    workload_runtime             = optional(string)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    spot_max_price              = optional(string)
+    snapshot_id                 = optional(string)
+    tags                        = optional(map(string))
+    scale_down_mode             = optional(string)
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    zones                       = optional(list(string))
+    temporary_name_for_rotation = optional(string)
+    workload_runtime            = optional(string)
     windows_profile = optional(object({
       outbound_nat_enabled = optional(bool)
     }))
@@ -891,6 +901,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_node_resource_group_lockdown"></a> [node\_resource\_group\_lockdown](#input\_node\_resource\_group\_lockdown)
+
+Description: Whether or not to enable resource group lockdown on the node resource group.
+
+Type: `bool`
+
+Default: `null`
 
 ### <a name="input_node_resource_group_name"></a> [node\_resource\_group\_name](#input\_node\_resource\_group\_name)
 
