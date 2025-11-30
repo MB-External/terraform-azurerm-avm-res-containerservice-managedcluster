@@ -50,10 +50,8 @@ output "kube_config" {
 }
 
 output "kubelet_identity_id" {
-  description = "Kubelet identity object id (not currently extracted)."
-  # Exposed when the managed cluster populates identityProfile.kubeletidentity
-  # If absent (e.g., preview features disabled), this will be null.
-  value = try(azapi_resource.this.output.properties.identityProfile.kubeletidentity.objectId, null)
+  description = "Kubelet identity object id."
+  value       = try(azapi_resource.this.output.properties.identityProfile.kubeletidentity.objectId, null)
 }
 
 output "name" {

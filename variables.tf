@@ -183,7 +183,7 @@ variable "default_node_pool" {
     max_pods                      = optional(number)
     node_public_ip_prefix_id      = optional(string)
     node_labels                   = optional(map(string))
-    only_critical_addons_enabled  = optional(string)
+    only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
     os_disk_size_gb               = optional(string)
     os_disk_type                  = optional(string)
@@ -432,6 +432,12 @@ variable "key_vault_secrets_provider" {
   description = "The key vault secrets provider for the Kubernetes cluster. Either rotation enabled or rotation interval must be specified."
 }
 
+variable "kubelet_identity" {
+  type        = string
+  default     = null
+  description = "The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group."
+}
+
 variable "kubernetes_cluster_node_pool_timeouts" {
   type = object({
     create = optional(string)
@@ -481,12 +487,16 @@ variable "linux_profile" {
   description = "The Linux profile for the Kubernetes cluster."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "local_account_disabled" {
   type        = bool
   default     = true
   description = "Defaults to true. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled."
   nullable    = false
+
+  validation {
+    condition     = var.local_account_disabled && try(var.azure_active_directory_role_based_access_control.azure_rbac_enabled, false)
+    error_message = "Azure RBAC must be enabled to disable local accounts"
+  }
 }
 
 variable "lock" {
@@ -514,17 +524,21 @@ variable "log_analytics_workspace_id" {
   description = "The Log Analytics Workspace Resource ID for container logging."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "maintenance_window" {
   type = object({
-    allowed = object({
-      day   = string
-      hours = set(number)
-    })
-    not_allowed = object({
+    frequency    = string
+    interval     = number
+    duration     = number
+    day_of_week  = optional(string)
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string)
+    utc_offset   = optional(string)
+    start_date   = optional(string)
+    not_allowed = optional(object({
       start = string
       end   = string
-    })
+    }))
   })
   default     = null
   description = "The maintenance window for the Kubernetes cluster."
@@ -632,6 +646,20 @@ variable "network_profile" {
   validation {
     condition     = try(var.network_profile.network_data_plane, null) != "cilium" || var.network_profile.network_policy == "cilium"
     error_message = "When `network_data_plane` is set to cilium, `network_policy` must also be set to cilium."
+  }
+}
+
+variable "node_auto_provisioning_profile" {
+  type = object({
+    default_node_pools = optional(string)
+    mode               = optional(string)
+  })
+  default     = null
+  description = "The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster."
+
+  validation {
+    error_message = "Node Auto Provisioning and Cluster Auto Scaler cannot be enabled at the same time."
+    condition     = var.auto_scaler_profile == null || var.node_auto_provisioning_profile == null
   }
 }
 
