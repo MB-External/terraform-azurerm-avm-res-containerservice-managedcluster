@@ -277,8 +277,8 @@ variable "security_profile" {
   description = "Optional. The security profile for the nodepool."
 
   validation {
-    condition     = try(contains(["Disabled", "EntraId", "LocalUser"], var.security_profile.ssh_access_mode), true)
-    error_message = "If provided, 'ssh_access_mode' must be one of 'Disabled', 'EntraId', or 'LocalUser'."
+    condition     = try(contains(["Disabled", "LocalUser"], var.security_profile.ssh_access_mode), true)
+    error_message = "If provided, 'ssh_access_mode' must be one of 'Disabled', 'LocalUser'."
   }
 }
 
