@@ -86,9 +86,9 @@ variable "week_index" {
 
 variable "schedule_name" {
   type        = string
-  description = "Name of the maintenance schedule. Either 'aksManagedAutoUpgradeSchedule' or 'aksNodeImageUpgradeSchedule'."
+  description = "Name of the maintenance schedule. Either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'."
       validation {
-        condition =  contains([ "aksManagedAutoUpgradeSchedule", "aksNodeImageUpgradeSchedule"], var.schedule_name)
-        error_message = "value must be either 'aksManagedAutoUpgradeSchedule' or 'aksNodeImageUpgradeSchedule'"
+        condition =  contains([ "aksManagedAutoUpgradeSchedule", "aksManagedNodeOSUpgradeSchedule"], var.schedule_name)
+        error_message = "value must be either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'"
       }
 }
