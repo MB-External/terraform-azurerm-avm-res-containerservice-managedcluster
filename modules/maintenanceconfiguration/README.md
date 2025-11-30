@@ -48,6 +48,12 @@ Description: Resource ID of the parent managed cluster.
 
 Type: `string`
 
+### <a name="input_schedule_name"></a> [schedule\_name](#input\_schedule\_name)
+
+Description: Name of the maintenance schedule. Either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'.
+
+Type: `string`
+
 ## Optional Inputs
 
 The following input variables are optional (have default values):

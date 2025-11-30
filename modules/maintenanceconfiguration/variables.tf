@@ -18,6 +18,16 @@ variable "parent_id" {
   description = "Resource ID of the parent managed cluster."
 }
 
+variable "schedule_name" {
+  type        = string
+  description = "Name of the maintenance schedule. Either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'."
+
+  validation {
+    condition     = contains(["aksManagedAutoUpgradeSchedule", "aksManagedNodeOSUpgradeSchedule"], var.schedule_name)
+    error_message = "value must be either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'"
+  }
+}
+
 variable "day_of_month" {
   type        = number
   default     = null
@@ -82,13 +92,4 @@ variable "week_index" {
   type        = string
   default     = null
   description = "Week index within month (e.g. First, Second, Third, Fourth, Last) for RelativeMonthly."
-}
-
-variable "schedule_name" {
-  type        = string
-  description = "Name of the maintenance schedule. Either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'."
-      validation {
-        condition =  contains([ "aksManagedAutoUpgradeSchedule", "aksManagedNodeOSUpgradeSchedule"], var.schedule_name)
-        error_message = "value must be either 'aksManagedAutoUpgradeSchedule' or 'aksManagedNodeOSUpgradeSchedule'"
-      }
 }
