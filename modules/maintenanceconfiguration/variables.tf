@@ -83,3 +83,12 @@ variable "week_index" {
   default     = null
   description = "Week index within month (e.g. First, Second, Third, Fourth, Last) for RelativeMonthly."
 }
+
+variable "schedule_name" {
+  type        = string
+  description = "Name of the maintenance schedule. Either 'aksManagedAutoUpgradeSchedule' or 'aksNodeImageUpgradeSchedule'."
+      validation {
+        condition =  contains([ "aksManagedAutoUpgradeSchedule", "aksNodeImageUpgradeSchedule"], var.schedule_name)
+        error_message = "value must be either 'aksManagedAutoUpgradeSchedule' or 'aksNodeImageUpgradeSchedule'"
+      }
+}
