@@ -1,5 +1,5 @@
 #############################################
-# AKS Maintenance Configuration (Auto Upgrade)
+# AKS Maintenance Configuration
 #############################################
 
 locals {
@@ -32,7 +32,7 @@ locals {
 resource "azapi_resource" "this" {
   count = var.enable ? 1 : 0
 
-  name      = "aksManagedAutoUpgradeSchedule"
+  name      = var.schedule_name
   parent_id = var.parent_id
   type      = "Microsoft.ContainerService/managedClusters/maintenanceConfigurations@2025-07-01"
   body = {

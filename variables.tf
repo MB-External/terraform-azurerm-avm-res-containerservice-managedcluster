@@ -524,17 +524,21 @@ variable "log_analytics_workspace_id" {
   description = "The Log Analytics Workspace Resource ID for container logging."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "maintenance_window" {
   type = object({
-    allowed = object({
-      day   = string
-      hours = set(number)
-    })
-    not_allowed = object({
+    frequency    = string
+    interval     = number
+    duration     = number
+    day_of_week  = optional(string)
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string)
+    utc_offset   = optional(string)
+    start_date   = optional(string)
+    not_allowed = optional(object({
       start = string
       end   = string
-    })
+    }))
   })
   default     = null
   description = "The maintenance window for the Kubernetes cluster."
