@@ -105,7 +105,7 @@ locals {
   sysctls = { for k, v in local.sysctls_base : k => v if v != null }
   # Build sysctls map (filter out nulls) combining min/max port range if both provided
   sysctls_base = var.linux_os_config == null || var.linux_os_config.sysctl_config == null ? {} : {
-    fsAioMaxNr              =/ var.linux_os_config.sysctl_config.fs_aio_max_nr
+    fsAioMaxNr              = var.linux_os_config.sysctl_config.fs_aio_max_nr
     fsFileMax               = var.linux_os_config.sysctl_config.fs_file_max
     fsInotifyMaxUserWatches = var.linux_os_config.sysctl_config.fs_inotify_max_user_watches
     fsNrOpen                = var.linux_os_config.sysctl_config.fs_nr_open
