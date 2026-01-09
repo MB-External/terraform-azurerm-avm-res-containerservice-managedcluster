@@ -8,6 +8,7 @@ module "monitoring" {
   log_analytics_workspace_id = var.log_analytics_workspace_id
   parent_id                  = var.parent_id
   prometheus_workspace_id    = var.prometheus_workspace_id
+  resource_names             = var.monitoring_resource_names
   tags                       = var.tags
 }
 

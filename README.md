@@ -272,7 +272,7 @@ object({
     node_labels                   = optional(map(string))
     only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
-    os_disk_size_gb               = optional(string)
+    os_disk_size_gb               = optional(number)
     os_disk_type                  = optional(string)
     os_sku                        = optional(string)
     pod_subnet_id                 = optional(string)
@@ -715,6 +715,27 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_monitoring_resource_names"></a> [monitoring\_resource\_names](#input\_monitoring\_resource\_names)
+
+Description: (Optional) Custom names for monitoring resources created by the module, will be computed if not specified.
+
+Type:
+
+```hcl
+object({
+    prometheus_data_collection_endpoint         = optional(string)
+    prometheus_data_collection_rule             = optional(string)
+    prometheus_data_collection_rule_association = optional(string)
+    prometheus_rule_group_node                  = optional(string)
+    prometheus_rule_group_ux                    = optional(string)
+    prometheus_rule_group_k8s                   = optional(string)
+    insights_data_collection_rule               = optional(string)
+    insights_data_collection_rule_association   = optional(string)
+  })
+```
+
+Default: `{}`
 
 ### <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile)
 
