@@ -11,7 +11,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.0.0, < 5.0.0"
+      version = ">= 4.46.0, < 5.0.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -73,8 +73,9 @@ module "create_before_destroy" {
   name      = module.naming.kubernetes_cluster.name_unique
   parent_id = azurerm_resource_group.this.id
   azure_active_directory_role_based_access_control = {
-    azure_rbac_enabled = true
-    tenant_id          = data.azurerm_client_config.current.tenant_id
+    azure_rbac_enabled     = true
+    tenant_id              = data.azurerm_client_config.current.tenant_id
+    admin_group_object_ids = []
   }
   create_nodepools_before_destroy = true
   default_node_pool = {
@@ -133,7 +134,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.0.0, < 5.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.46.0, < 5.0.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
 

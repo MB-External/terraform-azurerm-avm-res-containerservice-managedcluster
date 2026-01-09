@@ -2,7 +2,7 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = "${var.name}${var.cluster_suffix}"
   parent_id = var.parent_id
-  type      = "Microsoft.ContainerService/managedClusters@2025-09-01"
+  type      = "Microsoft.ContainerService/managedClusters@2025-10-01"
   body = {
     properties = local.properties_final
     sku        = var.sku
@@ -50,10 +50,6 @@ resource "azapi_resource" "this" {
       error_message = "Either disable automatic upgrades, or specify `kubernetes_version` or `orchestrator_version` only up to the minor version when using `automatic_channel_upgrade=patch`. You don't need to specify `kubernetes_version` at all when using `automatic_channel_upgrade=stable|rapid|node-image`, where `orchestrator_version` always must be set to `null`."
     }
     precondition {
-      condition     = local.is_automatic || var.role_based_access_control_enabled || !(var.azure_active_directory_role_based_access_control != null)
-      error_message = "Enabling Azure Active Directory integration requires that `role_based_access_control_enabled` be set to true."
-    }
-    precondition {
       condition     = local.is_automatic || var.key_management_service == null || try(!var.managed_identities.system_assigned, false)
       error_message = "KMS etcd encryption doesn't work with system-assigned managed identity."
     }
@@ -62,8 +58,8 @@ resource "azapi_resource" "this" {
       error_message = "`oidc_issuer_enabled` must be set to `true` to enable Azure AD Workload Identity"
     }
     precondition {
-      condition     = local.is_automatic || (var.dns_prefix != null) != (var.dns_prefix_private_cluster != null)
-      error_message = "Exactly one of `dns_prefix` or `dns_prefix_private_cluster` must be specified (non-null and non-empty)."
+      condition     = local.is_automatic || (var.dns_prefix == null) || (var.dns_prefix_private_cluster == null)
+      error_message = "Only one of `dns_prefix` or `dns_prefix_private_cluster` can be specified. If neither is specified, a random prefix will be generated."
     }
     precondition {
       condition     = local.is_automatic || (var.dns_prefix_private_cluster == null) || (var.api_server_access_profile.private_dns_zone_id != null)
@@ -97,7 +93,7 @@ resource "azapi_resource_action" "this_user_kubeconfig" {
 }
 
 resource "azapi_resource_action" "this_admin_kubeconfig" {
-  count = local.is_automatic || var.local_account_disabled ? 0 : 1
+  count = local.is_automatic || var.disable_local_accounts ? 0 : 1
 
   action                 = "listClusterAdminCredential"
   method                 = "POST"

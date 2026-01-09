@@ -1,18 +1,18 @@
 locals {
+  aad_profile = var.azure_active_directory_role_based_access_control != null ? {
+    adminGroupObjectIDs = var.azure_active_directory_role_based_access_control.admin_group_object_ids
+    managed             = true
+    enableAzureRBAC     = var.azure_active_directory_role_based_access_control.azure_rbac_enabled
+    tenantID            = var.azure_active_directory_role_based_access_control.tenant_id
+  } : null
   advanced_networking = var.advanced_networking != null ? {
-    enabled = true
+    enabled = var.advanced_networking.enabled
     observability = var.advanced_networking.observability != null ? {
       enabled = var.advanced_networking.observability.enabled
     } : null
     security = var.advanced_networking.security != null ? {
       enabled                 = var.advanced_networking.security.enabled
       advancedNetworkPolicies = var.advanced_networking.security.advanced_network_policies
-      transit_encryption = var.advanced_networking.security.transit_encryption != null ? {
-        type = var.advanced_networking.security.transit_encryption.type
-      } : null
-    } : null
-    performance = var.advanced_networking.performance != null ? {
-      accelerationMode = var.advanced_networking.performance.acceleration_mode
     } : null
   } : null
   agent_pool_profile_template = {
@@ -83,6 +83,7 @@ locals {
   api_server_access_profile = var.api_server_access_profile != null ? {
     authorizedIPRanges             = var.api_server_access_profile.authorized_ip_ranges
     enablePrivateCluster           = var.api_server_access_profile.enable_private_cluster
+    enableVnetIntegration          = var.api_server_access_profile.enable_vnet_integration
     enablePrivateClusterPublicFQDN = var.api_server_access_profile.enable_private_cluster_public_fqdn
     enableVnetIntegration          = var.api_server_access_profile.subnet_id != null
     privateDnsZone                 = var.api_server_access_profile.private_dns_zone_id
@@ -115,7 +116,7 @@ locals {
   }
   automatic_channel_upgrade_check = var.automatic_upgrade_channel == null ? true : (
     (contains(["patch"], var.automatic_upgrade_channel) && can(regex("^[0-9]{1,}\\.[0-9]{1,}$", var.kubernetes_version)) && (can(regex("^[0-9]{1,}\\.[0-9]{1,}$", var.default_node_pool.orchestrator_version)) || var.default_node_pool.orchestrator_version == null)) ||
-    (contains(["rapid", "stable", "node-image"], var.automatic_upgrade_channel) && var.kubernetes_version == null && var.default_node_pool.orchestrator_version == null)
+    (contains(["none", "rapid", "stable", "node-image"], var.automatic_upgrade_channel) && var.kubernetes_version == null && var.default_node_pool.orchestrator_version == null)
   )
   default_node_pool_count     = var.default_node_pool.node_count == null ? null : tonumber(var.default_node_pool.node_count)
   default_node_pool_max_count = var.default_node_pool.max_count == null ? null : tonumber(var.default_node_pool.max_count)
@@ -202,6 +203,7 @@ locals {
     kubernetesVersion      = var.kubernetes_version
     networkProfile         = local.network_profile_map
     nodeResourceGroup      = var.node_resource_group_name
+    serviceMeshProfile     = var.service_mesh_profile
     # Placeholders (null) for non-Automatic-only attributes so object type remains consistent across ternary
     aadProfile                = null
     autoScalerProfile         = null
@@ -236,6 +238,9 @@ locals {
         managed = true
       }
     ) : null
+    enableRBAC           = var.enable_role_based_access_control
+    disableLocalAccounts = var.disable_local_accounts
+    aadProfile           = local.aad_profile
     httpProxyConfig = var.http_proxy_config != null ? {
       enabled    = true
       httpProxy  = var.http_proxy_config.http_proxy
@@ -298,4 +303,11 @@ locals {
     ) : null
   }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
+}
+
+
+# Outputs
+locals {
+  kubeconfig_admin = length(azapi_resource_action.this_admin_kubeconfig) == 1 ? base64decode(azapi_resource_action.this_admin_kubeconfig[0].output.kubeconfigs[0].value) : null
+  kubeconfig_user  = !local.is_automatic ? base64decode(azapi_resource_action.this_user_kubeconfig[0].output.kubeconfigs[0].value) : null
 }

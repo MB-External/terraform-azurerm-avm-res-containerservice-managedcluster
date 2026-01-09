@@ -33,18 +33,22 @@ variable "advanced_networking" {
       enabled = optional(bool, false)
     }), null)
     security = optional(object({
-      advanced_network_policies = optional(string, null)
+      advanced_network_policies = optional(string, "FQDN")
       enabled                   = optional(bool, false)
-      transit_encryption = optional(object({
-        type = optional(string, null)
-      }), null)
-    }), null)
-    performance = optional(object({
-      acceleration_mode = optional(string, null)
     }), null)
   })
   default     = null
-  description = "Advanced networking feature toggles: observability, performance, and security sub-features."
+  description = <<DESCRIPTION
+Advanced networking feature toggles: observability, and security sub-features.
+
+## Security
+
+This allows users to configure Layer 7 network policies (FQDN, HTTP, Kafka).
+Policies themselves must be configured via the Cilium Network Policy resources,
+see <https://docs.cilium.io/en/latest/security/policy/index.html>.
+This can be enabled only on cilium-based clusters.
+If not specified, the default value is FQDN if `security.enabled` is set to true.
+DESCRIPTION
 }
 
 variable "alert_email" {
@@ -57,6 +61,7 @@ variable "api_server_access_profile" {
   type = object({
     authorized_ip_ranges               = optional(list(string))
     subnet_id                          = optional(string)
+    enable_vnet_integration            = optional(bool)
     enable_private_cluster             = optional(bool)
     enable_private_cluster_public_fqdn = optional(bool)
     private_dns_zone_id                = optional(string)
@@ -105,16 +110,16 @@ variable "automatic_upgrade_channel" {
 
   validation {
     condition = var.automatic_upgrade_channel == null ? true : contains([
-      "patch", "stable", "rapid", "node-image"
+      "none", "patch", "stable", "rapid", "node-image"
     ], var.automatic_upgrade_channel)
-    error_message = "`automatic_upgrade_channel`'s possible values are `patch`, `stable`, `rapid` or `node-image`."
+    error_message = "`automatic_upgrade_channel`'s possible values are `none`, `patch`, `stable`, `rapid` or `node-image`."
   }
 }
 
 variable "azure_active_directory_role_based_access_control" {
   type = object({
-    tenant_id              = optional(string)
-    admin_group_object_ids = optional(list(string))
+    tenant_id              = string
+    admin_group_object_ids = list(string)
     azure_rbac_enabled     = optional(bool)
   })
   default     = null
@@ -340,6 +345,18 @@ DESCRIPTION
   }
 }
 
+variable "disable_local_accounts" {
+  type        = bool
+  default     = false
+  description = "Whether or not to disable local accounts on the Kubernetes cluster."
+  nullable    = false
+
+  validation {
+    condition     = var.disable_local_accounts ? var.azure_active_directory_role_based_access_control != null : true
+    error_message = "Disabling local accounts requires Azure role based access control to be enabled."
+  }
+}
+
 variable "disk_encryption_set_id" {
   type        = string
   default     = null
@@ -366,6 +383,13 @@ variable "dns_prefix_private_cluster" {
     condition     = var.dns_prefix_private_cluster == null || can(regex("^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,52}[a-zA-Z0-9])?$", var.dns_prefix_private_cluster))
     error_message = "The DNS prefix must be between 1 and 54 characters long and can only contain letters, numbers and hyphens. Must begin and end with a letter or number."
   }
+}
+
+variable "enable_role_based_access_control" {
+  type        = bool
+  default     = true
+  description = "Whether or not to enable role based access control on the Kubernetes cluster."
+  nullable    = false
 }
 
 variable "enable_telemetry" {
@@ -710,6 +734,7 @@ variable "node_pools" {
     host_group_id                 = optional(string)
     fips_enabled                  = optional(bool)
     gpu_instance                  = optional(string)
+    gpu_driver                    = optional(string)
     kubelet_disk_type             = optional(string)
     max_pods                      = optional(number)
     mode                          = optional(string)
@@ -967,29 +992,45 @@ variable "role_assignments" {
   nullable    = false
 }
 
-variable "role_based_access_control_enabled" {
-  type        = bool
-  default     = true
-  description = "Whether or not role-based access control is enabled for the Kubernetes cluster."
-  nullable    = false
-}
-
 variable "service_mesh_profile" {
   type = object({
-    mode                             = string
-    internal_ingress_gateway_enabled = optional(bool)
-    external_ingress_gateway_enabled = optional(bool)
-    revisions                        = optional(list(string), [])
-    certificate_authority = optional(object({
-      key_vault_id           = string
-      root_cert_object_name  = string
-      cert_chain_object_name = string
-      cert_object_name       = string
-      key_object_name        = string
+    mode = string
+    istio = optional(object({
+      certificateAuthority = optional(object({
+        plugin = optional(object({
+          certChainObjectName = optional(string)
+          certObjectName      = optional(string)
+          keyObjectName       = optional(string)
+          keyVaultId          = optional(string)
+          rootCertObjectName  = optional(string)
+        }))
+      }))
+      components = optional(object({
+        egressGateways = optional(object({
+          enabled                  = bool
+          gatewayConfigurationName = optional(string)
+          name                     = optional(string)
+          namespace                = optional(string)
+        }))
+        ingressGateways = optional(object({
+          enabled = bool
+          mode    = optional(string)
+        }))
+      }))
+      revisions = optional(list(string))
     }))
   })
   default     = null
   description = "The service mesh profile for the Kubernetes cluster."
+
+  validation {
+    condition     = var.service_mesh_profile == null || try(var.service_mesh_profile.istio.components.ingressGateways.mode, null) == null || contains(["Internal", "External"], var.service_mesh_profile.istio.components.ingressGateways.mode)
+    error_message = "The ingressGateways mode must be one of: 'Internal' or 'External'."
+  }
+  validation {
+    condition     = var.service_mesh_profile == null || try(var.service_mesh_profile.istio.components.egressGateways.name, null) == null || can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$", var.service_mesh_profile.istio.components.egressGateways.name))
+    error_message = "The egressGateways name must match the pattern: [a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
+  }
 }
 
 variable "sku" {

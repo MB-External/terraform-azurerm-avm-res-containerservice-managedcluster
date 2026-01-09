@@ -29,7 +29,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.0.0, < 5.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.46.0, < 5.0.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
@@ -83,7 +83,15 @@ The following input variables are optional (have default values):
 
 ### <a name="input_advanced_networking"></a> [advanced\_networking](#input\_advanced\_networking)
 
-Description: Advanced networking feature toggles: observability, performance, and security sub-features.
+Description: Advanced networking feature toggles: observability, and security sub-features.
+
+## Security
+
+This allows users to configure Layer 7 network policies (FQDN, HTTP, Kafka).  
+Policies themselves must be configured via the Cilium Network Policy resources,  
+see <https://docs.cilium.io/en/latest/security/policy/index.html>.  
+This can be enabled only on cilium-based clusters.  
+If not specified, the default value is FQDN if `security.enabled` is set to true.
 
 Type:
 
@@ -94,14 +102,8 @@ object({
       enabled = optional(bool, false)
     }), null)
     security = optional(object({
-      advanced_network_policies = optional(string, null)
+      advanced_network_policies = optional(string, "FQDN")
       enabled                   = optional(bool, false)
-      transit_encryption = optional(object({
-        type = optional(string, null)
-      }), null)
-    }), null)
-    performance = optional(object({
-      acceleration_mode = optional(string, null)
     }), null)
   })
 ```
@@ -129,6 +131,7 @@ Type:
 object({
     authorized_ip_ranges               = optional(list(string))
     subnet_id                          = optional(string)
+    enable_vnet_integration            = optional(bool)
     enable_private_cluster             = optional(bool)
     enable_private_cluster_public_fqdn = optional(bool)
     private_dns_zone_id                = optional(string)
@@ -187,8 +190,8 @@ Type:
 
 ```hcl
 object({
-    tenant_id              = optional(string)
-    admin_group_object_ids = optional(list(string))
+    tenant_id              = string
+    admin_group_object_ids = list(string)
     azure_rbac_enabled     = optional(bool)
   })
 ```
@@ -412,6 +415,14 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_disable_local_accounts"></a> [disable\_local\_accounts](#input\_disable\_local\_accounts)
+
+Description: Whether or not to disable local accounts on the Kubernetes cluster.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_disk_encryption_set_id"></a> [disk\_encryption\_set\_id](#input\_disk\_encryption\_set\_id)
 
 Description: The disk encryption set resource ID for the Kubernetes cluster. The managed identity assigned to the cluster must have 'Contributor' role on the disk encryption set.
@@ -435,6 +446,14 @@ Description: The Private Cluster DNS prefix specified when creating a private cl
 Type: `string`
 
 Default: `null`
+
+### <a name="input_enable_role_based_access_control"></a> [enable\_role\_based\_access\_control](#input\_enable\_role\_based\_access\_control)
+
+Description: Whether or not to enable role based access control on the Kubernetes cluster.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
@@ -827,6 +846,7 @@ map(object({
     host_group_id                 = optional(string)
     fips_enabled                  = optional(bool)
     gpu_instance                  = optional(string)
+    gpu_driver                    = optional(string)
     kubelet_disk_type             = optional(string)
     max_pods                      = optional(number)
     mode                          = optional(string)
@@ -1094,14 +1114,6 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_role_based_access_control_enabled"></a> [role\_based\_access\_control\_enabled](#input\_role\_based\_access\_control\_enabled)
-
-Description: Whether or not role-based access control is enabled for the Kubernetes cluster.
-
-Type: `bool`
-
-Default: `true`
-
 ### <a name="input_service_mesh_profile"></a> [service\_mesh\_profile](#input\_service\_mesh\_profile)
 
 Description: The service mesh profile for the Kubernetes cluster.
@@ -1110,16 +1122,30 @@ Type:
 
 ```hcl
 object({
-    mode                             = string
-    internal_ingress_gateway_enabled = optional(bool)
-    external_ingress_gateway_enabled = optional(bool)
-    revisions                        = optional(list(string), [])
-    certificate_authority = optional(object({
-      key_vault_id           = string
-      root_cert_object_name  = string
-      cert_chain_object_name = string
-      cert_object_name       = string
-      key_object_name        = string
+    mode = string
+    istio = optional(object({
+      certificateAuthority = optional(object({
+        plugin = optional(object({
+          certChainObjectName = optional(string)
+          certObjectName      = optional(string)
+          keyObjectName       = optional(string)
+          keyVaultId          = optional(string)
+          rootCertObjectName  = optional(string)
+        }))
+      }))
+      components = optional(object({
+        egressGateways = optional(object({
+          enabled                  = bool
+          gatewayConfigurationName = optional(string)
+          name                     = optional(string)
+          namespace                = optional(string)
+        }))
+        ingressGateways = optional(object({
+          enabled = bool
+          mode    = optional(string)
+        }))
+      }))
+      revisions = optional(list(string))
     }))
   })
 ```

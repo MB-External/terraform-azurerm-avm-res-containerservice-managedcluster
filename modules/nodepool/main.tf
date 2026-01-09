@@ -105,7 +105,7 @@ locals {
   sysctls = { for k, v in local.sysctls_base : k => v if v != null }
   # Build sysctls map (filter out nulls) combining min/max port range if both provided
   sysctls_base = var.linux_os_config == null || var.linux_os_config.sysctl_config == null ? {} : {
-    fsAioMaxNr              = var.linux_os_config.sysctl_config.fs_aio_max_nr
+    fsAioMaxNr              =/ var.linux_os_config.sysctl_config.fs_aio_max_nr
     fsFileMax               = var.linux_os_config.sysctl_config.fs_file_max
     fsInotifyMaxUserWatches = var.linux_os_config.sysctl_config.fs_inotify_max_user_watches
     fsNrOpen                = var.linux_os_config.sysctl_config.fs_nr_open
@@ -158,7 +158,7 @@ resource "azapi_resource" "this" {
 
   name      = var.name
   parent_id = var.parent_id
-  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-09-01"
+  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
   body = merge({
     properties = local.agent_pool_properties
   }, var.tags == null ? {} : { tags = var.tags })
@@ -198,7 +198,7 @@ resource "azapi_resource" "create_before_destroy_node_pool" {
 
   name      = "${var.name}${substr(md5(uuid()), 0, 4)}"
   parent_id = var.parent_id
-  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-07-01"
+  type      = "Microsoft.ContainerService/managedClusters/agentPools@2025-10-01"
   body = merge({
     properties = local.agent_pool_properties
   }, var.tags == null ? {} : { tags = var.tags })

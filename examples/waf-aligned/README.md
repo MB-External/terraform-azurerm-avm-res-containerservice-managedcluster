@@ -11,7 +11,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.0.0, < 5.0.0"
+      version = ">= 4.46.0, < 5.0.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -140,8 +140,9 @@ module "waf_aligned" {
   }
   automatic_upgrade_channel = "stable"
   azure_active_directory_role_based_access_control = {
-    tenant_id          = data.azurerm_client_config.current.tenant_id
-    azure_rbac_enabled = true
+    tenant_id              = data.azurerm_client_config.current.tenant_id
+    azure_rbac_enabled     = true
+    admin_group_object_ids = []
   }
   default_node_pool = {
     name                         = "default"
@@ -230,7 +231,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.0.0, < 5.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.46.0, < 5.0.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
 

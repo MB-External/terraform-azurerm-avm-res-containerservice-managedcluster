@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.0.0, < 5.0.0"
+      version = ">= 4.46.0, < 5.0.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -27,76 +27,6 @@ module "regions" {
 
   is_recommended = true
   region_filter  = ["swedencentral"]
-}
-# AKS Automatic requires API Server VNet Integration which is not available in all regions yet.
-# See for updated locations: https://learn.microsoft.com/azure/aks/api-server-vnet-integration
-locals {
-  locations = [
-    "australiacentral",
-    "australiacentral2",
-    "australiaeast",
-    "australiasoutheast",
-    "austriaeast",
-    "brazilsouth",
-    "brazilsoutheast",
-    "canadacentral",
-    "canadaeast",
-    "centralindia",
-    "centralus",
-    "centraluseuap",
-    "chilecentral",
-    "eastasia",
-    "eastus",
-    "francecentral",
-    "francesouth",
-    "germanynorth",
-    "germanywestcentral",
-    "indonesiacentral",
-    "israelcentral",
-    "israelnorthwest",
-    "italynorth",
-    "japaneast",
-    "japanwest",
-    "jioindiacentral",
-    "jioindiawest",
-    "koreacentral",
-    "koreasouth",
-    "malaysiawest",
-    "mexicocentral",
-    "newzealandnorth",
-    "northcentralus",
-    "northeurope",
-    "norwayeast",
-    "norwaywest",
-    "polandcentral",
-    "southafricanorth",
-    "southafricawest",
-    "southcentralus",
-    "southcentralus2",
-    "southeastasia",
-    "southeastus",
-    "southeastus3",
-    "southeastus5",
-    "southindia",
-    "southwestus",
-    "spaincentral",
-    "swedencentral",
-    "swedensouth",
-    "switzerlandnorth",
-    "switzerlandwest",
-    "taiwannorth",
-    "taiwannorthwest",
-    "uaecentral",
-    "uaenorth",
-    "uksouth",
-    "ukwest",
-    "usgovtexas",
-    "westcentralus",
-    "westeurope",
-    "westus",
-    "westus2",
-    "westus3"
-  ]
 }
 
 # This allows us to randomize the region for the resource group.
