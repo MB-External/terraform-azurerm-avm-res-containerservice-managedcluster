@@ -104,6 +104,12 @@ object({
     security = optional(object({
       advanced_network_policies = optional(string, "FQDN")
       enabled                   = optional(bool, false)
+      transit_encryption = optional(object({
+        type = optional(string, null)
+      }), null)
+    }), null)
+    performance = optional(object({
+      acceleration_mode = optional(string, null)
     }), null)
   })
 ```
@@ -190,8 +196,8 @@ Type:
 
 ```hcl
 object({
-    tenant_id              = string
-    admin_group_object_ids = list(string)
+    tenant_id              = optional(string)
+    admin_group_object_ids = optional(list(string))
     azure_rbac_enabled     = optional(bool)
   })
 ```

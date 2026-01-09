@@ -35,6 +35,12 @@ variable "advanced_networking" {
     security = optional(object({
       advanced_network_policies = optional(string, "FQDN")
       enabled                   = optional(bool, false)
+      transit_encryption = optional(object({
+        type = optional(string, null)
+      }), null)
+    }), null)
+    performance = optional(object({
+      acceleration_mode = optional(string, null)
     }), null)
   })
   default     = null
@@ -118,8 +124,8 @@ variable "automatic_upgrade_channel" {
 
 variable "azure_active_directory_role_based_access_control" {
   type = object({
-    tenant_id              = string
-    admin_group_object_ids = list(string)
+    tenant_id              = optional(string)
+    admin_group_object_ids = optional(list(string))
     azure_rbac_enabled     = optional(bool)
   })
   default     = null

@@ -14,6 +14,12 @@ locals {
       enabled                 = var.advanced_networking.security.enabled
       advancedNetworkPolicies = var.advanced_networking.security.advanced_network_policies
     } : null
+    transit_encryption = var.advanced_networking.security.transit_encryption != null ? {
+      type = var.advanced_networking.security.transit_encryption.type
+    } : null
+    performance = var.advanced_networking.performance != null ? {
+      accelerationMode = var.advanced_networking.performance.acceleration_mode
+    } : null
   } : null
   agent_pool_profile_template = {
     availabilityZones      = null
