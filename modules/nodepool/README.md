@@ -368,6 +368,22 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_security_profile"></a> [security\_profile](#input\_security\_profile)
+
+Description: Optional. The security profile for the nodepool.
+
+Type:
+
+```hcl
+object({
+    secure_boot_enabled = optional(bool)
+    vtpm_enabled        = optional(bool)
+    ssh_access_mode     = optional(string)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_snapshot_id"></a> [snapshot\_id](#input\_snapshot\_id)
 
 Description: Optional. The ID of the snapshot.

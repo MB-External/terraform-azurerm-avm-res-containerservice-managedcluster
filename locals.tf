@@ -16,17 +16,23 @@ locals {
     } : null
   } : null
   agent_pool_profile_template = {
-    availabilityZones = null
-    count             = null
-    enableAutoScaling = null
-    maxCount          = null
-    minCount          = null
-    mode              = null
-    name              = null
-    osType            = null
-    type              = null
-    vmSize            = null
-    vnetSubnetID      = null
+    availabilityZones      = null
+    count                  = null
+    enableAutoScaling      = null
+    enableEncryptionAtHost = null
+    maxCount               = null
+    minCount               = null
+    mode                   = null
+    name                   = null
+    nodeTaints             = null
+    osDiskSizeGB           = null
+    osDiskType             = null
+    osSKU                  = null
+    osType                 = null
+    securityProfile        = null
+    type                   = null
+    vmSize                 = null
+    vnetSubnetID           = null
   }
   agent_pool_profiles = local.agent_pool_profiles_raw == null ? null : [
     for profile in local.agent_pool_profiles_raw : {
@@ -40,10 +46,11 @@ locals {
     merge(
       local.agent_pool_profile_template,
       {
-        name         = local.default_node_pool_name
-        mode         = "System"
-        count        = local.default_node_pool_count != null ? local.default_node_pool_count : 3
-        vnetSubnetID = var.default_node_pool.vnet_subnet_id
+        name                   = local.default_node_pool_name
+        mode                   = "System"
+        count                  = local.default_node_pool_count != null ? local.default_node_pool_count : 3
+        enableEncryptionAtHost = var.default_node_pool.host_encryption_enabled
+        vnetSubnetID           = var.default_node_pool.vnet_subnet_id
       }
     )
   ] : []
@@ -53,17 +60,23 @@ locals {
     merge(
       local.agent_pool_profile_template,
       {
-        mode              = "System"
-        osType            = "Linux"
-        name              = local.default_node_pool_name
-        count             = local.default_node_pool_count
-        vmSize            = var.default_node_pool.vm_size
-        enableAutoScaling = var.default_node_pool.auto_scaling_enabled
-        minCount          = local.default_node_pool_min_count
-        maxCount          = local.default_node_pool_max_count
-        type              = var.default_node_pool.type
-        vnetSubnetID      = var.default_node_pool.vnet_subnet_id
-        availabilityZones = try(length(var.default_node_pool.zones) > 0 ? var.default_node_pool.zones : null, null)
+        mode                   = "System"
+        osType                 = "Linux"
+        osDiskSizeGB           = var.default_node_pool.os_disk_size_gb
+        osSKU                  = var.default_node_pool.os_sku
+        osDiskType             = var.default_node_pool.os_disk_type
+        name                   = local.default_node_pool_name
+        count                  = local.default_node_pool_count
+        vmSize                 = var.default_node_pool.vm_size
+        enableAutoScaling      = var.default_node_pool.auto_scaling_enabled
+        enableEncryptionAtHost = var.default_node_pool.host_encryption_enabled
+        minCount               = local.default_node_pool_min_count
+        maxCount               = local.default_node_pool_max_count
+        nodeTaints             = var.default_node_pool.only_critical_addons_enabled ? ["CriticalAddonsOnly=true:NoSchedule"] : []
+        securityProfile        = local.default_node_pool_security_profile
+        type                   = var.default_node_pool.type
+        vnetSubnetID           = var.default_node_pool.vnet_subnet_id
+        availabilityZones      = try(length(var.default_node_pool.zones) > 0 ? var.default_node_pool.zones : null, null)
       }
     )
   ]
@@ -72,6 +85,7 @@ locals {
     enablePrivateCluster           = var.api_server_access_profile.enable_private_cluster
     enableVnetIntegration          = var.api_server_access_profile.enable_vnet_integration
     enablePrivateClusterPublicFQDN = var.api_server_access_profile.enable_private_cluster_public_fqdn
+    enableVnetIntegration          = var.api_server_access_profile.subnet_id != null
     privateDnsZone                 = var.api_server_access_profile.private_dns_zone_id
     subnetId                       = var.api_server_access_profile.subnet_id
     disableRunCommand              = !var.api_server_access_profile.run_command_enabled
@@ -108,6 +122,22 @@ locals {
   default_node_pool_max_count = var.default_node_pool.max_count == null ? null : tonumber(var.default_node_pool.max_count)
   default_node_pool_min_count = var.default_node_pool.min_count == null ? null : tonumber(var.default_node_pool.min_count)
   default_node_pool_name      = coalesce(try(var.default_node_pool.name, null), "systempool")
+  default_node_pool_security_profile = var.default_node_pool.security_profile != null ? merge(
+    var.default_node_pool.security_profile.secure_boot_enabled != null ? {
+      enableSecureBoot = var.default_node_pool.security_profile.secure_boot_enabled
+    } : {},
+    var.default_node_pool.security_profile.vtpm_enabled != null ? {
+      enableVTPM = var.default_node_pool.security_profile.vtpm_enabled
+    } : {},
+    var.default_node_pool.security_profile.ssh_access_mode != null ? {
+      sshAccess = var.default_node_pool.security_profile.ssh_access_mode
+    } : {}
+  ) : null
+  identity_profile = var.kubelet_identity != null ? {
+    kubeletidentity = {
+      resourceId = var.kubelet_identity
+    }
+  } : null
   ingress_profile = {
     webAppRouting = {
       nginx = {
@@ -168,31 +198,47 @@ locals {
     apiServerAccessProfile = local.api_server_access_profile
     azureMonitorProfile    = local.monitor_profile
     diskEncryptionSetID    = var.disk_encryption_set_id
+    identityProfile        = local.identity_profile
     ingressProfile         = local.ingress_profile
     kubernetesVersion      = var.kubernetes_version
     networkProfile         = local.network_profile_map
     nodeResourceGroup      = var.node_resource_group_name
     serviceMeshProfile     = var.service_mesh_profile
     # Placeholders (null) for non-Automatic-only attributes so object type remains consistent across ternary
-    aadProfile           = null
-    autoScalerProfile    = null
-    autoUpgradeProfile   = null
-    dnsPrefix            = null
-    disableLocalAccounts = null
-    enableRBAC           = null
-    httpProxyConfig      = null
-    oidcIssuerProfile    = null
-    securityProfile      = null
-    storageProfile       = null
-    supportPlan          = null
-    windowsProfile       = null
+    aadProfile                = null
+    autoScalerProfile         = null
+    autoUpgradeProfile        = null
+    dnsPrefix                 = null
+    disableLocalAccounts      = null
+    enableRbac                = null
+    httpProxyConfig           = null
+    nodeProvisioningProfile   = null
+    nodeResourceGroupProfile  = null
+    oidcIssuerProfile         = null
+    securityProfile           = null
+    windowsProfile            = null
+    storageProfile            = null
+    supportPlan               = null
+    workloadAutoScalerProfile = null
   }
   properties_final          = { for k, v in local.properties_final_preclean : k => v if v != null }
   properties_final_preclean = local.is_automatic ? local.properties_base : merge(local.properties_base, local.properties_standard_only)
   properties_standard_only = {
-    enableRBAC           = var.enable_role_based_access_control
-    disableLocalAccounts = var.disable_local_accounts
-    aadProfile           = local.aad_profile
+    aadProfile = var.azure_active_directory_role_based_access_control != null ? merge(
+      var.azure_active_directory_role_based_access_control.admin_group_object_ids != null ? {
+        adminGroupObjectIDs = var.azure_active_directory_role_based_access_control.admin_group_object_ids
+      } : {},
+      var.azure_active_directory_role_based_access_control.azure_rbac_enabled != null ? {
+        enableAzureRBAC = var.azure_active_directory_role_based_access_control.azure_rbac_enabled
+      } : {},
+      var.azure_active_directory_role_based_access_control.tenant_id != null ? {
+        tenantID = var.azure_active_directory_role_based_access_control.tenant_id
+      } : {},
+      {
+        managed = true
+      }
+    ) : null
+    aadProfile = local.aad_profile
     httpProxyConfig = var.http_proxy_config != null ? {
       enabled    = true
       httpProxy  = var.http_proxy_config.http_proxy
@@ -200,7 +246,16 @@ locals {
       noProxy    = var.http_proxy_config.no_proxy
       trustedCa  = var.http_proxy_config.trusted_ca
     } : null
-    dnsPrefix = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
+    nodeProvisioningProfile = var.node_auto_provisioning_profile != null ? {
+      defaultNodePools = var.node_auto_provisioning_profile.default_node_pools
+      mode             = var.node_auto_provisioning_profile.mode
+    } : null
+    nodeResourceGroupProfile = var.node_resource_group_lockdown != null ? {
+      restrictionLevel = var.node_resource_group_lockdown ? "ReadOnly" : "Unrestricted"
+    } : null
+    disableLocalAccounts = var.disable_local_accounts
+    dnsPrefix            = coalesce(var.dns_prefix, var.dns_prefix_private_cluster, random_string.dns_prefix.result)
+    enableRbac           = var.enable_role_based_access_control
     autoUpgradeProfile = (var.automatic_upgrade_channel != null || var.node_os_channel_upgrade != null) ? {
       upgradeChannel       = var.automatic_upgrade_channel
       nodeOSUpgradeChannel = var.node_os_channel_upgrade
@@ -214,6 +269,9 @@ locals {
       } : null
       defender = var.defender_log_analytics_workspace_id != null ? {
         logAnalyticsWorkspaceResourceId = var.defender_log_analytics_workspace_id
+        securityMonitoring = {
+          enabled = true
+        }
       } : null
       } : {
       workloadIdentity = null
@@ -237,6 +295,10 @@ locals {
       snapshotController = { enabled = var.storage_profile.snapshot_controller_enabled }
     } : null
     supportPlan = var.support_plan
+    workloadAutoScalerProfile = var.workload_autoscaler_profile != null ? merge(
+      var.workload_autoscaler_profile.keda_enabled != null ? { keda = { enabled = var.workload_autoscaler_profile.keda_enabled } } : {},
+      var.workload_autoscaler_profile.vpa_enabled != null ? { verticalPodAutoscaler = { enabled = var.workload_autoscaler_profile.vpa_enabled } } : {},
+    ) : null
   }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
@@ -245,5 +307,5 @@ locals {
 # Outputs
 locals {
   kubeconfig_admin = length(azapi_resource_action.this_admin_kubeconfig) == 1 ? base64decode(azapi_resource_action.this_admin_kubeconfig[0].output.kubeconfigs[0].value) : null
-  kubeconfig_user  = !local.is_automatic ? base64decode(azapi_resource_action.this_user_kubeconfig[0].output.kubeconfigs[0].value) : null
+  kubeconfig_user  = !local.is_automatic && !var.disable_local_accounts ? base64decode(azapi_resource_action.this_user_kubeconfig[0].output.kubeconfigs[0].value) : null
 }

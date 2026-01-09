@@ -37,6 +37,7 @@ module "nodepools" {
   priority                       = each.value.priority
   proximity_placement_group_id   = each.value.proximity_placement_group_id
   scale_down_mode                = each.value.scale_down_mode
+  security_profile               = each.value.security_profile
   snapshot_id                    = each.value.snapshot_id
   spot_max_price                 = each.value.spot_max_price
   tags                           = each.value.tags

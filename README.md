@@ -25,7 +25,7 @@ Things to do:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.12, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.4)
 
@@ -190,8 +190,8 @@ Type:
 
 ```hcl
 object({
-    tenant_id              = string
-    admin_group_object_ids = list(string)
+    tenant_id              = optional(string)
+    admin_group_object_ids = optional(list(string))
     azure_rbac_enabled     = optional(bool)
   })
 ```
@@ -273,25 +273,30 @@ object({
     max_pods                      = optional(number)
     node_public_ip_prefix_id      = optional(string)
     node_labels                   = optional(map(string))
-    only_critical_addons_enabled  = optional(string)
+    only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
-    os_disk_size_gb               = optional(string)
+    os_disk_size_gb               = optional(number)
     os_disk_type                  = optional(string)
     os_sku                        = optional(string)
     pod_subnet_id                 = optional(string)
     proximity_placement_group_id  = optional(string)
     scale_down_mode               = optional(string)
-    snapshot_id                   = optional(string)
-    temporary_name_for_rotation   = optional(string)
-    type                          = optional(string, "VirtualMachineScaleSets")
-    tags                          = optional(map(string))
-    ultra_ssd_enabled             = optional(bool)
-    vnet_subnet_id                = optional(string)
-    workload_runtime              = optional(string)
-    zones                         = optional(list(string))
-    max_count                     = optional(number)
-    min_count                     = optional(number)
-    node_count                    = optional(number, 3)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    snapshot_id                 = optional(string)
+    temporary_name_for_rotation = optional(string)
+    type                        = optional(string, "VirtualMachineScaleSets")
+    tags                        = optional(map(string))
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    workload_runtime            = optional(string)
+    zones                       = optional(list(string))
+    max_count                   = optional(number)
+    min_count                   = optional(number)
+    node_count                  = optional(number, 3)
     kubelet_config = optional(object({
       cpu_manager_policy        = optional(string)
       cpu_cfs_quota_enabled     = optional(bool, true)
@@ -540,6 +545,14 @@ object({
 
 Default: `null`
 
+### <a name="input_kubelet_identity"></a> [kubelet\_identity](#input\_kubelet\_identity)
+
+Description: The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_kubernetes_cluster_node_pool_timeouts"></a> [kubernetes\_cluster\_node\_pool\_timeouts](#input\_kubernetes\_cluster\_node\_pool\_timeouts)
 
 Description: - `create` - (Defaults to 60 minutes) Used when creating the Kubernetes Cluster Node Pool.
@@ -603,14 +616,6 @@ object({
 
 Default: `null`
 
-### <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled)
-
-Description: Defaults to true. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled.
-
-Type: `bool`
-
-Default: `true`
-
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
 Description: Controls the Resource Lock configuration for this resource. The following properties can be specified:
@@ -645,14 +650,19 @@ Type:
 
 ```hcl
 object({
-    allowed = object({
-      day   = string
-      hours = set(number)
-    })
-    not_allowed = object({
+    frequency    = string
+    interval     = number
+    duration     = number
+    day_of_week  = optional(string)
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string)
+    utc_offset   = optional(string)
+    start_date   = optional(string)
+    not_allowed = optional(object({
       start = string
       end   = string
-    })
+    }))
   })
 ```
 
@@ -717,6 +727,27 @@ object({
 
 Default: `null`
 
+### <a name="input_monitoring_resource_names"></a> [monitoring\_resource\_names](#input\_monitoring\_resource\_names)
+
+Description: (Optional) Custom names for monitoring resources created by the module, will be computed if not specified.
+
+Type:
+
+```hcl
+object({
+    prometheus_data_collection_endpoint         = optional(string)
+    prometheus_data_collection_rule             = optional(string)
+    prometheus_data_collection_rule_association = optional(string)
+    prometheus_rule_group_node                  = optional(string)
+    prometheus_rule_group_ux                    = optional(string)
+    prometheus_rule_group_k8s                   = optional(string)
+    insights_data_collection_rule               = optional(string)
+    insights_data_collection_rule_association   = optional(string)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_network_profile"></a> [network\_profile](#input\_network\_profile)
 
 Description: The network profile for the Kubernetes cluster.
@@ -762,6 +793,21 @@ Default:
   "network_policy": "azure"
 }
 ```
+
+### <a name="input_node_auto_provisioning_profile"></a> [node\_auto\_provisioning\_profile](#input\_node\_auto\_provisioning\_profile)
+
+Description: The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster.
+
+Type:
+
+```hcl
+object({
+    default_node_pools = optional(string)
+    mode               = optional(string)
+  })
+```
+
+Default: `null`
 
 ### <a name="input_node_os_channel_upgrade"></a> [node\_os\_channel\_upgrade](#input\_node\_os\_channel\_upgrade)
 
@@ -816,15 +862,20 @@ map(object({
     pod_subnet_id                = optional(string)
     priority                     = optional(string)
     proximity_placement_group_id = optional(string)
-    spot_max_price               = optional(string)
-    snapshot_id                  = optional(string)
-    tags                         = optional(map(string))
-    scale_down_mode              = optional(string)
-    ultra_ssd_enabled            = optional(bool)
-    vnet_subnet_id               = optional(string)
-    zones                        = optional(list(string))
-    temporary_name_for_rotation  = optional(string)
-    workload_runtime             = optional(string)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    spot_max_price              = optional(string)
+    snapshot_id                 = optional(string)
+    tags                        = optional(map(string))
+    scale_down_mode             = optional(string)
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    zones                       = optional(list(string))
+    temporary_name_for_rotation = optional(string)
+    workload_runtime            = optional(string)
     windows_profile = optional(object({
       outbound_nat_enabled = optional(bool)
     }))
@@ -883,6 +934,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_node_resource_group_lockdown"></a> [node\_resource\_group\_lockdown](#input\_node\_resource\_group\_lockdown)
+
+Description: Whether or not to enable resource group lockdown on the node resource group.
+
+Type: `bool`
+
+Default: `null`
 
 ### <a name="input_node_resource_group_name"></a> [node\_resource\_group\_name](#input\_node\_resource\_group\_name)
 
@@ -1256,7 +1315,7 @@ Description: User kubeconfig raw YAML (sensitive).
 
 ### <a name="output_kubelet_identity_id"></a> [kubelet\_identity\_id](#output\_kubelet\_identity\_id)
 
-Description: Kubelet identity object id (not currently extracted).
+Description: Kubelet identity object id.
 
 ### <a name="output_name"></a> [name](#output\_name)
 
@@ -1317,6 +1376,12 @@ Source: ./modules/alerting
 Version:
 
 ### <a name="module_maintenance_auto_upgrade"></a> [maintenance\_auto\_upgrade](#module\_maintenance\_auto\_upgrade)
+
+Source: ./modules/maintenanceconfiguration
+
+Version:
+
+### <a name="module_maintenance_node_image_upgrade"></a> [maintenance\_node\_image\_upgrade](#module\_maintenance\_node\_image\_upgrade)
 
 Source: ./modules/maintenanceconfiguration
 

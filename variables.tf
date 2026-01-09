@@ -118,8 +118,8 @@ variable "automatic_upgrade_channel" {
 
 variable "azure_active_directory_role_based_access_control" {
   type = object({
-    tenant_id              = string
-    admin_group_object_ids = list(string)
+    tenant_id              = optional(string)
+    admin_group_object_ids = optional(list(string))
     azure_rbac_enabled     = optional(bool)
   })
   default     = null
@@ -188,25 +188,30 @@ variable "default_node_pool" {
     max_pods                      = optional(number)
     node_public_ip_prefix_id      = optional(string)
     node_labels                   = optional(map(string))
-    only_critical_addons_enabled  = optional(string)
+    only_critical_addons_enabled  = optional(bool, false)
     orchestrator_version          = optional(string)
-    os_disk_size_gb               = optional(string)
+    os_disk_size_gb               = optional(number)
     os_disk_type                  = optional(string)
     os_sku                        = optional(string)
     pod_subnet_id                 = optional(string)
     proximity_placement_group_id  = optional(string)
     scale_down_mode               = optional(string)
-    snapshot_id                   = optional(string)
-    temporary_name_for_rotation   = optional(string)
-    type                          = optional(string, "VirtualMachineScaleSets")
-    tags                          = optional(map(string))
-    ultra_ssd_enabled             = optional(bool)
-    vnet_subnet_id                = optional(string)
-    workload_runtime              = optional(string)
-    zones                         = optional(list(string))
-    max_count                     = optional(number)
-    min_count                     = optional(number)
-    node_count                    = optional(number, 3)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    snapshot_id                 = optional(string)
+    temporary_name_for_rotation = optional(string)
+    type                        = optional(string, "VirtualMachineScaleSets")
+    tags                        = optional(map(string))
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    workload_runtime            = optional(string)
+    zones                       = optional(list(string))
+    max_count                   = optional(number)
+    min_count                   = optional(number)
+    node_count                  = optional(number, 3)
     kubelet_config = optional(object({
       cpu_manager_policy        = optional(string)
       cpu_cfs_quota_enabled     = optional(bool, true)
@@ -456,6 +461,12 @@ variable "key_vault_secrets_provider" {
   description = "The key vault secrets provider for the Kubernetes cluster. Either rotation enabled or rotation interval must be specified."
 }
 
+variable "kubelet_identity" {
+  type        = string
+  default     = null
+  description = "The resource ID of the User Assigned Identity assigned to the Kubelets. If not specified a Managed Identity is created automatically in the managed resource group."
+}
+
 variable "kubernetes_cluster_node_pool_timeouts" {
   type = object({
     create = optional(string)
@@ -505,14 +516,6 @@ variable "linux_profile" {
   description = "The Linux profile for the Kubernetes cluster."
 }
 
-# tflint-ignore: terraform_unused_declarations
-variable "local_account_disabled" {
-  type        = bool
-  default     = true
-  description = "Defaults to true. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled."
-  nullable    = false
-}
-
 variable "lock" {
   type = object({
     kind = string
@@ -538,17 +541,21 @@ variable "log_analytics_workspace_id" {
   description = "The Log Analytics Workspace Resource ID for container logging."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "maintenance_window" {
   type = object({
-    allowed = object({
-      day   = string
-      hours = set(number)
-    })
-    not_allowed = object({
+    frequency    = string
+    interval     = number
+    duration     = number
+    day_of_week  = optional(string)
+    day_of_month = optional(number)
+    week_index   = optional(string)
+    start_time   = optional(string)
+    utc_offset   = optional(string)
+    start_date   = optional(string)
+    not_allowed = optional(object({
       start = string
       end   = string
-    })
+    }))
   })
   default     = null
   description = "The maintenance window for the Kubernetes cluster."
@@ -596,6 +603,22 @@ variable "monitor_metrics" {
   })
   default     = null
   description = "The monitor metrics for the Kubernetes cluster. Both required if enabling Prometheus"
+}
+
+variable "monitoring_resource_names" {
+  type = object({
+    prometheus_data_collection_endpoint         = optional(string)
+    prometheus_data_collection_rule             = optional(string)
+    prometheus_data_collection_rule_association = optional(string)
+    prometheus_rule_group_node                  = optional(string)
+    prometheus_rule_group_ux                    = optional(string)
+    prometheus_rule_group_k8s                   = optional(string)
+    insights_data_collection_rule               = optional(string)
+    insights_data_collection_rule_association   = optional(string)
+  })
+  default     = {}
+  description = "(Optional) Custom names for monitoring resources created by the module, will be computed if not specified."
+  nullable    = false
 }
 
 variable "network_profile" {
@@ -659,6 +682,20 @@ variable "network_profile" {
   }
 }
 
+variable "node_auto_provisioning_profile" {
+  type = object({
+    default_node_pools = optional(string)
+    mode               = optional(string)
+  })
+  default     = null
+  description = "The Node Auto Provisioning (NAP / Karpenter) profile for the Kubernetes cluster."
+
+  validation {
+    error_message = "Node Auto Provisioning and Cluster Auto Scaler cannot be enabled at the same time."
+    condition     = var.auto_scaler_profile == null || var.node_auto_provisioning_profile == null
+  }
+}
+
 variable "node_os_channel_upgrade" {
   type        = string
   default     = "NodeImage"
@@ -709,15 +746,20 @@ variable "node_pools" {
     pod_subnet_id                = optional(string)
     priority                     = optional(string)
     proximity_placement_group_id = optional(string)
-    spot_max_price               = optional(string)
-    snapshot_id                  = optional(string)
-    tags                         = optional(map(string))
-    scale_down_mode              = optional(string)
-    ultra_ssd_enabled            = optional(bool)
-    vnet_subnet_id               = optional(string)
-    zones                        = optional(list(string))
-    temporary_name_for_rotation  = optional(string)
-    workload_runtime             = optional(string)
+    security_profile = optional(object({
+      secure_boot_enabled = optional(bool)
+      vtpm_enabled        = optional(bool)
+      ssh_access_mode     = optional(string)
+    }))
+    spot_max_price              = optional(string)
+    snapshot_id                 = optional(string)
+    tags                        = optional(map(string))
+    scale_down_mode             = optional(string)
+    ultra_ssd_enabled           = optional(bool)
+    vnet_subnet_id              = optional(string)
+    zones                       = optional(list(string))
+    temporary_name_for_rotation = optional(string)
+    workload_runtime            = optional(string)
     windows_profile = optional(object({
       outbound_nat_enabled = optional(bool)
     }))
@@ -775,6 +817,12 @@ variable "node_pools" {
   }))
   default     = {}
   description = "Optional. The additional node pools for the Kubernetes cluster."
+}
+
+variable "node_resource_group_lockdown" {
+  type        = bool
+  default     = null
+  description = "Whether or not to enable resource group lockdown on the node resource group."
 }
 
 variable "node_resource_group_name" {

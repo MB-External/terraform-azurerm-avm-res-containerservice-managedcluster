@@ -41,10 +41,14 @@ locals {
     !local.is_automatic ? var.key_vault_secrets_provider != null ? {
       azureKeyvaultSecretsProvider = {
         enabled = true
-        config = {
-          enableSecretRotation = var.key_vault_secrets_provider.secret_rotation_enabled
-          rotationPollInterval = var.key_vault_secrets_provider.secret_rotation_interval
-        }
+        config = merge(
+          var.key_vault_secrets_provider.secret_rotation_enabled != null ? {
+            enableSecretRotation = tostring(var.key_vault_secrets_provider.secret_rotation_enabled)
+          } : {},
+          var.key_vault_secrets_provider.secret_rotation_interval != null ? {
+            rotationPollInterval = var.key_vault_secrets_provider.secret_rotation_interval
+          } : {},
+        )
       }
       } : {
       azureKeyvaultSecretsProvider = {

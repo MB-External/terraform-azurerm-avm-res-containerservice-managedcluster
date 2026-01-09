@@ -66,6 +66,27 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_resource_names"></a> [resource\_names](#input\_resource\_names)
+
+Description: (Optional) Custom names for monitoring resources created by the module, will be computed if not specified.
+
+Type:
+
+```hcl
+object({
+    prometheus_data_collection_endpoint         = optional(string)
+    prometheus_data_collection_rule             = optional(string)
+    prometheus_data_collection_rule_association = optional(string)
+    prometheus_rule_group_node                  = optional(string)
+    prometheus_rule_group_ux                    = optional(string)
+    prometheus_rule_group_k8s                   = optional(string)
+    insights_data_collection_rule               = optional(string)
+    insights_data_collection_rule_association   = optional(string)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
 Description: (Optional) Tags of the resource.
