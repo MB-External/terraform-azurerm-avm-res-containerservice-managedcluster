@@ -14,12 +14,6 @@ locals {
       enabled                 = var.advanced_networking.security.enabled
       advancedNetworkPolicies = var.advanced_networking.security.advanced_network_policies
     } : null
-    transit_encryption = var.advanced_networking.security.transit_encryption != null ? {
-      type = var.advanced_networking.security.transit_encryption.type
-    } : null
-    performance = var.advanced_networking.performance != null ? {
-      accelerationMode = var.advanced_networking.performance.acceleration_mode
-    } : null
   } : null
   agent_pool_profile_template = {
     availabilityZones      = null
@@ -313,5 +307,5 @@ locals {
 # Outputs
 locals {
   kubeconfig_admin = length(azapi_resource_action.this_admin_kubeconfig) == 1 ? base64decode(azapi_resource_action.this_admin_kubeconfig[0].output.kubeconfigs[0].value) : null
-  kubeconfig_user  = !local.is_automatic ? base64decode(azapi_resource_action.this_user_kubeconfig[0].output.kubeconfigs[0].value) : null
+  kubeconfig_user  = !local.is_automatic && !var.disable_local_accounts ? base64decode(azapi_resource_action.this_user_kubeconfig[0].output.kubeconfigs[0].value) : null
 }

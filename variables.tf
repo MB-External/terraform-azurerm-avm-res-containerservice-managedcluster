@@ -35,12 +35,6 @@ variable "advanced_networking" {
     security = optional(object({
       advanced_network_policies = optional(string, "FQDN")
       enabled                   = optional(bool, false)
-      transit_encryption = optional(object({
-        type = optional(string, null)
-      }), null)
-    }), null)
-    performance = optional(object({
-      acceleration_mode = optional(string, null)
     }), null)
   })
   default     = null
