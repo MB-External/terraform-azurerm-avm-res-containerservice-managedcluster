@@ -616,14 +616,6 @@ object({
 
 Default: `null`
 
-### <a name="input_local_account_disabled"></a> [local\_account\_disabled](#input\_local\_account\_disabled)
-
-Description: Defaults to false. Whether or not the local account should be disabled on the Kubernetes cluster. Azure RBAC must be enabled.
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
 Description: Controls the Resource Lock configuration for this resource. The following properties can be specified:
