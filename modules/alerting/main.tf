@@ -1,7 +1,7 @@
 # https://learn.microsoft.com/azure/templates/microsoft.insights/actiongroups?pivots=deployment-language-terraform
 resource "azapi_resource" "ag" {
   location  = "Global"
-  name      = "RecommendedAlertRules-AG-1"
+  name      = var.resource_names.action_group != null ? var.resource_names.action_group : "RecommendedAlertRules-AG-1"
   parent_id = var.parent_id
   type      = "Microsoft.Insights/actionGroups@2024-10-01-preview"
   body = {
@@ -23,7 +23,7 @@ resource "azapi_resource" "ag" {
 # https://learn.microsoft.com/azure/templates/microsoft.insights/metricalerts?pivots=deployment-language-terraform
 resource "azapi_resource" "metricalert_cpu" {
   location  = "Global"
-  name      = "CPU Usage Percentage - ${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.alert_cpu != null ? var.resource_names.alert_cpu : "CPU Usage Percentage - ${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.Insights/metricAlerts@2018-03-01"
   body = {
@@ -61,7 +61,7 @@ resource "azapi_resource" "metricalert_cpu" {
 
 resource "azapi_resource" "metricalert_memory" {
   location  = "Global"
-  name      = "Memory Working Set Percentage - ${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.alert_memory != null ? var.resource_names.alert_memory : "Memory Working Set Percentage - ${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.Insights/metricAlerts@2018-03-01"
   body = {

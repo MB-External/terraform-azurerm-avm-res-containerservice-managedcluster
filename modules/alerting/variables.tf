@@ -16,6 +16,17 @@ variable "parent_id" {
   nullable    = false
 }
 
+variable "resource_names" {
+  type = object({
+    action_group         = optional(string)
+    alert_cpu            = optional(string)
+    alert_memory = optional(string)
+  })
+  default     = {}
+  description = "(Optional) Custom names for alerting resources created by the module, will be computed if not specified."
+  nullable    = false
+}
+
 variable "tags" {
   type        = map(string)
   default     = null

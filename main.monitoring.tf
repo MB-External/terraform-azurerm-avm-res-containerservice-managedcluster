@@ -6,6 +6,7 @@ module "monitoring" {
   aks_cluster_id             = azapi_resource.this.id
   location                   = var.location
   log_analytics_workspace_id = var.addon_profile_oms_agent.config.log_analytics_workspace_resource_id
+  resource_names  = var.monitoring_resource_names
   parent_id                  = var.parent_id
   prometheus_workspace_id    = var.prometheus_workspace_id
   tags                       = var.tags
@@ -18,6 +19,7 @@ module "alerting" {
 
   aks_cluster_id = azapi_resource.this.id
   alert_email    = var.alert_email
+  resource_names = var.alerting_resource_names
   parent_id      = var.parent_id
   tags           = var.tags
 }
