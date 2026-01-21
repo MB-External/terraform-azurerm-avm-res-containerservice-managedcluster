@@ -107,7 +107,7 @@ resource "azurerm_role_assignment" "this" {
 }
 
 resource "azapi_resource_action" "this_user_kubeconfig" {
-  count = local.is_automatic ? 0 : 1
+  count = local.is_automatic || var.disable_local_accounts ? 0 : 1
 
   action                 = "listClusterUserCredential"
   method                 = "POST"
