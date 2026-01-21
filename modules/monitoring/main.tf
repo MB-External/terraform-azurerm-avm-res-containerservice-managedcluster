@@ -1,7 +1,7 @@
 # https://learn.microsoft.com/azure/templates/microsoft.insights/datacollectionendpoints?pivots=deployment-language-terraform
 resource "azapi_resource" "dce_msprom" {
   location  = var.location
-  name      = "MSProm-${var.location}-${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.prometheus_data_collection_endpoint != null ? var.resource_names.prometheus_data_collection_endpoint : "MSProm-${var.location}-${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.Insights/dataCollectionEndpoints@2023-03-11"
   body = {
@@ -14,7 +14,7 @@ resource "azapi_resource" "dce_msprom" {
 # https://learn.microsoft.com/azure/templates/microsoft.insights/datacollectionrules?pivots=deployment-language-terraform
 resource "azapi_resource" "dcr_msprom" {
   location  = var.location
-  name      = "MSProm-${var.location}-${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.prometheus_data_collection_rule != null ? var.resource_names.prometheus_data_collection_rule : "MSProm-${var.location}-${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.Insights/dataCollectionRules@2023-03-11"
   body = {
@@ -56,7 +56,7 @@ resource "azapi_resource" "dcr_msprom" {
 
 # https://learn.microsoft.com/azure/templates/microsoft.insights/datacollectionruleassociations?pivots=deployment-language-terraform
 resource "azapi_resource" "dcr_msprom_aks" {
-  name      = "dcr-${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.prometheus_data_collection_rule_association != null ? var.resource_names.prometheus_data_collection_rule_association : "dcr-${basename(var.aks_cluster_id)}"
   parent_id = var.aks_cluster_id
   type      = "Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11"
   body = {
@@ -79,7 +79,7 @@ resource "azapi_resource" "dce_msprom_aks" {
 # https://learn.microsoft.com/azure/templates/microsoft.alertsmanagement/prometheusrulegroups?pivots=deployment-language-terraform
 resource "azapi_resource" "prg_node" {
   location  = var.location
-  name      = "NodeRecordingRulesRuleGroup - ${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.prometheus_rule_group_node != null ? var.resource_names.prometheus_rule_group_node : "NodeRecordingRulesRuleGroup - ${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.AlertsManagement/prometheusRuleGroups@2023-03-01"
   body = {
@@ -144,7 +144,7 @@ resource "azapi_resource" "prg_node" {
 # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-default
 resource "azapi_resource" "prg_ux" {
   location  = var.location
-  name      = "UXRecordingRulesRuleGroup - ${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.prometheus_rule_group_ux != null ? var.resource_names.prometheus_rule_group_ux : "UXRecordingRulesRuleGroup - ${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.AlertsManagement/prometheusRuleGroups@2023-03-01"
   body = {
@@ -238,7 +238,7 @@ resource "azapi_resource" "prg_ux" {
 
 resource "azapi_resource" "prg_k8s" {
   location  = var.location
-  name      = "KubernetesRecordingRulesRuleGroup - ${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.prometheus_rule_group_k8s != null ? var.resource_names.prometheus_rule_group_k8s : "KubernetesRecordingRulesRuleGroup - ${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.AlertsManagement/prometheusRuleGroups@2023-03-01"
   body = {
@@ -347,7 +347,7 @@ resource "azapi_resource" "prg_k8s" {
 # https://learn.microsoft.com/azure/templates/microsoft.insights/datacollectionrules?pivots=deployment-language-terraform
 resource "azapi_resource" "dcr_msci" {
   location  = var.location
-  name      = "MSCI-${var.location}-${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.insights_data_collection_rule != null ? var.resource_names.insights_data_collection_rule : "MSCI-${var.location}-${basename(var.aks_cluster_id)}"
   parent_id = var.parent_id
   type      = "Microsoft.Insights/dataCollectionRules@2023-03-11"
   body = {
@@ -403,7 +403,7 @@ resource "azapi_resource" "dcr_msci" {
 
 # https://learn.microsoft.com/azure/templates/microsoft.insights/datacollectionruleassociations?pivots=deployment-language-terraform
 resource "azapi_resource" "dcr_msci_aks" {
-  name      = "msci-${basename(var.aks_cluster_id)}"
+  name      = var.resource_names.insights_data_collection_rule_association != null ? var.resource_names.insights_data_collection_rule_association : "msci-${basename(var.aks_cluster_id)}"
   parent_id = var.aks_cluster_id
   type      = "Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11"
   body = {

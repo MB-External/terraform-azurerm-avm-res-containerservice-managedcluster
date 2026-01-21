@@ -4,6 +4,33 @@ variable "alert_email" {
   description = "The email address to send alerts to."
 }
 
+variable "alerting_resource_names" {
+  type = object({
+    action_group         = optional(string)
+    alert_cpu            = optional(string)
+    alert_memory = optional(string)
+  })
+  default     = {}
+  description = "(Optional) Custom names for alerting resources created by the module, will be computed if not specified."
+  nullable    = false
+}
+
+variable "monitoring_resource_names" {
+  type = object({
+    prometheus_data_collection_endpoint         = optional(string)
+    prometheus_data_collection_rule             = optional(string)
+    prometheus_data_collection_rule_association = optional(string)
+    prometheus_rule_group_node                  = optional(string)
+    prometheus_rule_group_ux                    = optional(string)
+    prometheus_rule_group_k8s                   = optional(string)
+    insights_data_collection_rule               = optional(string)
+    insights_data_collection_rule_association   = optional(string)
+  })
+  default     = {}
+  description = "(Optional) Custom names for monitoring resources created by the module, will be computed if not specified."
+  nullable    = false
+}
+
 variable "onboard_alerts" {
   type        = bool
   default     = false
